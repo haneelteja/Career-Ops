@@ -14,7 +14,9 @@
     "update": "node update-system.mjs apply",
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
-    "scan": "node scan.mjs"
+    "scan": "node scan.mjs",
+    "dashboard": "node build-dashboard.mjs",
+    "deploy": "node build-dashboard.mjs && git add docs/index.html && git commit -m 'chore: update dashboard' && git push"
   },
   "keywords": [
     "ai",
