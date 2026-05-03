@@ -16,7 +16,7 @@
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
     "dashboard": "node build-dashboard.mjs",
-    "deploy": "node build-dashboard.mjs && git add docs/index.html && git commit -m 'chore: update dashboard' && git push"
+    "deploy": "node build-dashboard.mjs && git add -A && git commit -m 'chore: update' && git push"
   },
   "keywords": [
     "ai",
