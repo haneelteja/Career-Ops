@@ -4,7 +4,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Parse applications.md table
+// ── parsers ──────────────────────────────────────────────────────────────────
+
 function parseApplications(filePath) {
   const content = readFileSync(filePath, 'utf-8');
   const apps = [];
@@ -18,25 +19,18 @@ function parseApplications(filePath) {
     const scoreMatch = score.match(/(\d+\.?\d*)/);
     const reportMatch = report.match(/\[([^\]]+)\]\(([^)]+)\)/);
     apps.push({
-      num: parseInt(num) || 0,
-      date,
-      company,
-      role,
+      num: parseInt(num) || 0, date, company, role,
       score: scoreMatch ? parseFloat(scoreMatch[1]) : 0,
-      scoreRaw: score,
-      status,
+      scoreRaw: score, status,
       hasPdf: pdf === '✅',
       reportFile: reportMatch ? reportMatch[2] : null,
-      notes,
-      url: null,
-      keyPoints: [],
-      atsKeywords: '',
+      notes, url: null, keyPoints: [], atsKeywords: '',
+      summary: '', coverLetter: '',
     });
   }
   return apps.sort((a, b) => b.num - a.num);
 }
 
-// Parse pipeline.md to extract num -> url mapping
 function parsePipelineUrls(filePath) {
   if (!existsSync(filePath)) return {};
   const content = readFileSync(filePath, 'utf-8');
@@ -50,20 +44,43 @@ function parsePipelineUrls(filePath) {
   return map;
 }
 
-// Extract URL and key points from a report file
+function parsePendingPipeline(filePath) {
+  if (!existsSync(filePath)) return [];
+  const content = readFileSync(filePath, 'utf-8');
+  const pending = [];
+  let inPending = false;
+  for (const line of content.split('\n')) {
+    if (line.trim() === '## Pending') { inPending = true; continue; }
+    if (line.startsWith('## ') && line.trim() !== '## Pending') { inPending = false; continue; }
+    if (inPending && line.match(/^- \[ \]/)) {
+      const parts = line.replace(/^- \[ \]\s*/, '').split('|').map(s => s.trim());
+      pending.push({ url: parts[0] || '', company: parts[1] || '', role: parts[2] || '' });
+    }
+  }
+  return pending;
+}
+
+function parseScanHistory(filePath) {
+  if (!existsSync(filePath)) return { lastDate: null, count: 0 };
+  const content = readFileSync(filePath, 'utf-8');
+  const lines = content.split('\n').filter(l => l.trim() && !l.startsWith('url'));
+  let lastDate = null;
+  for (const line of lines) {
+    const cols = line.split('\t');
+    if (cols[1] && /\d{4}-\d{2}-\d{2}/.test(cols[1])) {
+      if (!lastDate || cols[1] > lastDate) lastDate = cols[1];
+    }
+  }
+  return { lastDate, count: lines.length };
+}
+
 function parseReport(filePath) {
   if (!existsSync(filePath)) return { url: null, keyPoints: [], atsKeywords: '' };
   const content = readFileSync(filePath, 'utf-8');
-
-  // URL
   const urlM = content.match(/\*\*URL:\*\*\s*(https?:\/\/[^\s\n]+)/);
   const url = urlM ? urlM[1].trim() : null;
-
-  // ATS Keywords (Block E newer format)
   const atsM = content.match(/\*\*ATS Keywords[^:]*:\*\*\s*([^\n]+)/i);
   const atsKeywords = atsM ? atsM[1].trim() : '';
-
-  // Key Talking Points (older format: ## Key Talking Points)
   const ktp = [];
   const ktpM = content.match(/## Key Talking Points\n([\s\S]*?)(?=\n##|$)/);
   if (ktpM) {
@@ -72,8 +89,6 @@ function parseReport(filePath) {
       if (pt) ktp.push(pt);
     }
   }
-
-  // CV Emphasis bullets (Block E newer format)
   if (!ktp.length) {
     const cvM = content.match(/\*\*CV Emphasis:\*\*\n([\s\S]*?)(?=\n\*\*|\n##|$)/);
     if (cvM) {
@@ -83,29 +98,54 @@ function parseReport(filePath) {
       }
     }
   }
-
   return { url, keyPoints: ktp.slice(0, 4), atsKeywords };
 }
 
-// Enrich applications with URLs and key points from pipeline + reports
+// ── content generators (Node.js, pre-computed at build time) ─────────────────
+
+function computeSummary(a) {
+  const isPega = /pega/i.test(a.role + ' ' + a.company);
+  const isPO = /product owner|product manager/i.test(a.role);
+  if (isPega) {
+    return 'PEGA Certified Business Architect (CPBA + CSSA) with 7+ years of enterprise Pega delivery. Sr. Business Architect at Novitates — requirements, solution design, and releases across financial services. Improved release quality 25%, reduced post-deployment defects 20%. PMP + CSM certified. Spans both Pega development AND business architecture — a rare dual profile.';
+  }
+  if (isPO) {
+    return 'Certified Product Owner and Business Analyst with 7+ years of dual-track delivery. Owned backlogs and roadmaps at Mintage (marketing app +15% engagement, real estate app +20% satisfaction) and Novitates (release planning +25% predictability). PMP + CSM + PEGA CPBA certified. AI tools in daily practice (ChatGPT, Perplexity, Fireflies.ai) — reduced documentation time 25%.';
+  }
+  return 'Certified Business Architect with 7+ years bridging business strategy and technical delivery. Sr. Business Architect at Novitates: requirements, stakeholder management, release planning (+25% predictability), change management (-35% transition issues), team leadership (10 people). PEGA CPBA + CSSA + PMP + CSM. AI tooling in daily BA practice — 25% documentation time reduction.';
+}
+
+function computeCoverLetter(a) {
+  const pt1 = a.keyPoints[0] || '7+ years of business analysis and architecture experience';
+  const pt2 = a.keyPoints[1] || 'dual PEGA certification (CPBA + CSSA) alongside PMP and CSM';
+  const pt3 = a.keyPoints[2] || 'led cross-functional teams of 10+ with measurable delivery outcomes';
+  return `Dear Hiring Team,
+
+I am writing to apply for the ${a.role} position at ${a.company}. With 7+ years spanning business architecture, Pega delivery, and technical project management, I offer both technical depth and business leadership — a combination that directly maps to this role.
+
+${pt1}. ${pt2}. What sets me apart is that I have been the developer, the project manager, and the business architect. That full-lifecycle experience means I resolve requirement gaps faster and reduce costly handoff friction. Track record: +25% release predictability, -35% transition issues, -50% implementation time.
+
+${pt3}. I am confident I can add immediate value at ${a.company} and look forward to discussing this opportunity.
+
+Best regards,
+Haneel Teja Nalluru
+nalluruhaneel@gmail.com | +91 9642917777
+linkedin.com/in/haneel-teja-nalluru-8872b0125`;
+}
+
+// ── enrich ───────────────────────────────────────────────────────────────────
+
 function enrichApplications(apps, root) {
   const pipelineUrls = parsePipelineUrls(join(root, 'data', 'pipeline.md'));
   const reportsDir = join(root, 'reports');
-
   for (const app of apps) {
-    // Try pipeline.md url first
     if (pipelineUrls[app.num]) app.url = pipelineUrls[app.num];
-
-    // Try report file
     if (app.reportFile) {
-      const reportPath = join(root, app.reportFile);
-      const { url, keyPoints, atsKeywords } = parseReport(reportPath);
+      const { url, keyPoints, atsKeywords } = parseReport(join(root, app.reportFile));
       if (!app.url && url) app.url = url;
       app.keyPoints = keyPoints;
       app.atsKeywords = atsKeywords;
     }
-
-    // Fallback: scan reports directory by num prefix
     if (!app.url && existsSync(reportsDir)) {
       const padded = String(app.num).padStart(3, '0');
       const match = readdirSync(reportsDir).find(f => f.startsWith(padded + '-'));
@@ -116,16 +156,22 @@ function enrichApplications(apps, root) {
         if (!app.atsKeywords) app.atsKeywords = atsKeywords;
       }
     }
+    app.summary = computeSummary(app);
+    app.coverLetter = computeCoverLetter(app);
   }
   return apps;
 }
 
-function generateHTML(apps, buildDate) {
+// ── HTML ─────────────────────────────────────────────────────────────────────
+
+function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
   const total = apps.length;
   const applied = apps.filter(a => a.status === 'Applied').length;
   const evaluated = apps.filter(a => a.status === 'Evaluated').length;
   const actionable = apps.filter(a => a.status === 'Evaluated' && a.score >= 4.0).length;
   const discarded = apps.filter(a => a.status === 'Discarded' || a.status === 'SKIP').length;
+  const pendingCount = pendingInbox.length;
+  const lastScan = scanHistory.lastDate || 'Never';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -133,7 +179,7 @@ function generateHTML(apps, buildDate) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Career-Ops — Haneel Teja Nalluru</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
     body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
     .card { background: #1e293b; border: 1px solid #334155; }
@@ -152,53 +198,73 @@ function generateHTML(apps, buildDate) {
     tr:hover td { background: #1e293b; }
     input, select { background:#1e293b; border:1px solid #334155; color:#e2e8f0; border-radius:0.5rem; padding:0.35rem 0.75rem; font-size:0.875rem; }
     input:focus, select:focus { outline:none; border-color:#60a5fa; }
-    .answer-panel { display:none; }
-    .answer-panel.open { display:block; }
+    .panel { display:none; }
+    .panel.open { display:block; }
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:#0f172a; }
     ::-webkit-scrollbar-thumb { background:#334155; border-radius:3px; }
     .copy-btn:active { transform:scale(0.95); }
     .toast { position:fixed; bottom:1.5rem; right:1.5rem; background:#1e293b; border:1px solid #4ade80; color:#4ade80; padding:0.6rem 1.2rem; border-radius:0.5rem; font-size:0.85rem; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:999; }
     .toast.show { opacity:1; }
+    .tab-btn { padding:0.3rem 0.85rem; border-radius:0.4rem; font-size:0.75rem; cursor:pointer; transition:background 0.15s; border:1px solid transparent; }
+    .tab-btn.active { background:#334155; color:#e2e8f0; border-color:#475569; }
+    .tab-btn:not(.active) { color:#64748b; }
+    .tab-btn:not(.active):hover { color:#94a3b8; background:#1e293b; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    pre { white-space:pre-wrap; word-break:break-word; font-family:inherit; }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen p-4 md:p-6">
 <div class="max-w-7xl mx-auto">
-  <div id="toast" class="toast">Copied to clipboard!</div>
+  <div id="toast" class="toast">Copied!</div>
 
   <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+  <div class="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-white">Career-Ops</h1>
-      <p class="text-slate-400 mt-1 text-sm">Haneel Teja Nalluru · Built ${buildDate}</p>
+      <h1 class="text-2xl font-bold text-white">Career-Ops</h1>
+      <p class="text-slate-500 text-xs mt-0.5">Haneel Teja Nalluru · Built ${buildDate}</p>
     </div>
-    <div class="flex gap-3 flex-wrap">
-      <div class="card rounded-xl px-5 py-3 text-center min-w-[72px]">
-        <div class="text-2xl font-bold text-white">${total}</div>
+    <div class="flex gap-2 flex-wrap">
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
+        <div class="text-xl font-bold text-white">${total}</div>
         <div class="text-xs text-slate-400">Total</div>
       </div>
-      <div class="card rounded-xl px-5 py-3 text-center min-w-[72px]">
-        <div class="text-2xl font-bold text-green-400">${applied}</div>
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
+        <div class="text-xl font-bold text-green-400">${applied}</div>
         <div class="text-xs text-slate-400">Applied</div>
       </div>
-      <div class="card rounded-xl px-5 py-3 text-center min-w-[72px]">
-        <div class="text-2xl font-bold text-blue-400">${evaluated}</div>
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
+        <div class="text-xl font-bold text-blue-400">${evaluated}</div>
         <div class="text-xs text-slate-400">Pending</div>
       </div>
-      <div class="card rounded-xl px-5 py-3 text-center min-w-[72px]">
-        <div class="text-2xl font-bold text-yellow-400">${actionable}</div>
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
+        <div class="text-xl font-bold text-yellow-400">${actionable}</div>
         <div class="text-xs text-slate-400">Act Now</div>
       </div>
-      <div class="card rounded-xl px-5 py-3 text-center min-w-[72px]">
-        <div class="text-2xl font-bold text-slate-500">${discarded}</div>
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]${pendingCount > 0 ? ' border-blue-600' : ''}">
+        <div class="text-xl font-bold ${pendingCount > 0 ? 'text-blue-400' : 'text-slate-500'}">${pendingCount}</div>
+        <div class="text-xs text-slate-400">Inbox</div>
+      </div>
+      <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
+        <div class="text-xl font-bold text-slate-500">${discarded}</div>
         <div class="text-xs text-slate-400">Closed</div>
       </div>
     </div>
   </div>
 
+  <!-- Scan bar -->
+  <div class="card rounded-xl px-4 py-2.5 mb-6 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+    <span>Last scan: <span class="text-slate-300 font-medium">${lastScan}</span></span>
+    <span class="text-slate-700">·</span>
+    <span>Scanned: <span class="text-slate-300 font-medium">${scanHistory.count} URLs</span></span>
+    <span class="text-slate-700">·</span>
+    <span>Refresh after scan: <code class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono">npm run deploy</code></span>
+  </div>
+
   <!-- Active Applications -->
   <section class="mb-8">
-    <h2 class="text-base font-semibold text-slate-300 mb-3 flex items-center gap-2">
+    <h2 class="text-xs font-semibold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
       <span class="text-green-400">●</span> Active Applications
     </h2>
     <div id="active-section"></div>
@@ -207,26 +273,36 @@ function generateHTML(apps, buildDate) {
   <!-- Actionable Now -->
   <section class="mb-8">
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-      <h2 class="text-base font-semibold text-slate-300 flex items-center gap-2">
+      <h2 class="text-xs font-semibold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
         <span class="text-yellow-400">●</span> Actionable Now
-        <span class="text-slate-500 text-xs font-normal">(Score ≥ 4.0 · Not yet applied)</span>
+        <span class="text-slate-600 normal-case font-normal">(Score ≥ 4.0 · Evaluated)</span>
       </h2>
-      <button onclick="openAllActionable()" class="text-sm bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-4 py-1.5 rounded-lg transition-colors">
+      <button onclick="openAllActionable()" class="text-xs bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-3 py-1.5 rounded-lg transition-colors">
         Open All in Tabs →
       </button>
     </div>
-    <p class="text-slate-600 text-xs mb-3">Click each card to see your pre-loaded answer pack. Open a job tab, paste answers, submit.</p>
     <div id="actionable-section"></div>
   </section>
+
+  ${pendingCount > 0 ? `
+  <!-- Pipeline Inbox -->
+  <section class="mb-8">
+    <h2 class="text-xs font-semibold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+      <span class="text-blue-400">●</span> Pipeline Inbox
+      <span class="text-slate-600 normal-case font-normal">(New URLs to evaluate — paste into Claude)</span>
+    </h2>
+    <div id="inbox-section"></div>
+  </section>
+  ` : ''}
 
   <!-- Full Pipeline Table -->
   <section>
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3">
-      <h2 class="text-base font-semibold text-slate-300 flex items-center gap-2">
-        <span class="text-slate-400">●</span> Full Pipeline
+      <h2 class="text-xs font-semibold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
+        <span class="text-slate-600">●</span> Full Pipeline
       </h2>
       <div class="flex gap-2 flex-wrap">
-        <input type="text" id="search" placeholder="Search…" style="width:180px" />
+        <input type="text" id="search" placeholder="Search…" style="width:150px" />
         <select id="status-filter">
           <option value="">All Status</option>
           <option>Applied</option>
@@ -248,14 +324,14 @@ function generateHTML(apps, buildDate) {
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="bg-slate-800 text-slate-400 text-xs uppercase tracking-wider">
-            <th class="px-3 py-3 text-left cursor-pointer select-none hover:text-white" onclick="sort('num')"># <span id="sort-num"></span></th>
-            <th class="px-3 py-3 text-left cursor-pointer select-none hover:text-white" onclick="sort('date')">Date <span id="sort-date"></span></th>
-            <th class="px-3 py-3 text-left">Company</th>
-            <th class="px-3 py-3 text-left">Role</th>
-            <th class="px-3 py-3 text-left cursor-pointer select-none hover:text-white" onclick="sort('score')">Score <span id="sort-score"></span></th>
-            <th class="px-3 py-3 text-left cursor-pointer select-none hover:text-white" onclick="sort('status')">Status <span id="sort-status"></span></th>
-            <th class="px-3 py-3 text-left">Apply</th>
-            <th class="px-3 py-3 text-left text-slate-600">Notes</th>
+            <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('num')"># <span id="sort-num"></span></th>
+            <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('date')">Date <span id="sort-date"></span></th>
+            <th class="px-3 py-2.5 text-left">Company</th>
+            <th class="px-3 py-2.5 text-left">Role</th>
+            <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('score')">Score <span id="sort-score"></span></th>
+            <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('status')">Status <span id="sort-status"></span></th>
+            <th class="px-3 py-2.5 text-left">Actions</th>
+            <th class="px-3 py-2.5 text-left text-slate-600">Notes</th>
           </tr>
         </thead>
         <tbody id="pipeline-body"></tbody>
@@ -267,6 +343,7 @@ function generateHTML(apps, buildDate) {
 
 <script>
 const DATA = ${JSON.stringify(apps)};
+const INBOX = ${JSON.stringify(pendingInbox)};
 let sortKey = 'num', sortAsc = false;
 
 function scoreClass(s) {
@@ -275,61 +352,77 @@ function scoreClass(s) {
   if (s >= 3.0) return 'score-low';
   return 'score-skip';
 }
-
 function badge(s) {
-  const key = (s || 'SKIP').replace(/[^a-zA-Z]/g, '');
-  return \`<span class="px-2 py-0.5 rounded text-xs font-medium badge-\${key}">\${s}</span>\`;
+  const key = (s || 'SKIP').replace(/[^a-zA-Z]/g,'');
+  return '<span class="px-2 py-0.5 rounded text-xs font-medium badge-' + key + '">' + s + '</span>';
 }
-
-function showToast() {
+function showToast(msg) {
   const t = document.getElementById('toast');
+  t.textContent = msg || 'Copied!';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(() => t.classList.remove('show'), 2200);
 }
-
-function copyText(text) {
-  navigator.clipboard.writeText(text).then(showToast);
+function copy(text, msg) {
+  navigator.clipboard.writeText(text).then(() => showToast(msg));
 }
-
-function answerPack(a) {
-  const lines = [
-    \`=== APPLICATION PACK: \${a.company} — \${a.role} ===\`,
-    \`Score: \${a.scoreRaw}  |  Date: \${a.date}\`,
-    \`URL: \${a.url || 'Check pipeline.md'}\`,
+function togglePanel(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+function switchTab(panelId, tab) {
+  const p = document.getElementById(panelId);
+  if (!p) return;
+  p.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  p.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const btn = p.querySelector('[data-tab="' + tab + '"]');
+  const cnt = p.querySelector('.tc-' + tab);
+  if (btn) btn.classList.add('active');
+  if (cnt) cnt.classList.add('active');
+}
+function genFullPack(a) {
+  return [
+    '=== APPLICATION PACK: ' + a.company + ' — ' + a.role + ' ===',
+    'Score: ' + a.scoreRaw + '  |  Evaluated: ' + a.date,
+    'URL: ' + (a.url || 'Check pipeline.md'),
+    '',
+    '--- STANDARD FIELDS ---',
+    'Full Name: Haneel Teja Nalluru',
+    'Email: nalluruhaneel@gmail.com',
+    'Phone: +91 9642917777',
+    'LinkedIn: linkedin.com/in/haneel-teja-nalluru-8872b0125',
+    'Location: Hyderabad, India',
+    'Total Experience: 7+ years',
+    'Current Company: Novitates Technology Solutions Pvt. Ltd.',
+    'Current Role: Sr. Business Architect',
+    'Expected CTC: \\u20b912-14L CTC (open to discussion)',
+    'Work Authorization: Indian Citizen — no sponsorship required',
+    '',
+    '--- PROFESSIONAL SUMMARY ---',
+    a.summary,
+    '',
+    '--- COVER LETTER ---',
+    a.coverLetter,
     '',
     '--- KEY SELLING POINTS ---',
-    ...a.keyPoints.map(p => '• ' + p),
+    ...(a.keyPoints.length ? a.keyPoints.map(p => '• ' + p) : ['• See report for details']),
     '',
-  ];
-  if (a.atsKeywords) {
-    lines.push('--- ATS KEYWORDS TO USE ---');
-    lines.push(a.atsKeywords);
-    lines.push('');
-  }
-  lines.push('--- NOTES ---');
-  lines.push(a.notes);
-  lines.push('');
-  lines.push('--- STANDARD FIELDS ---');
-  lines.push('Name: Haneel Teja Nalluru');
-  lines.push('Email: nalluruhaneel@gmail.com');
-  lines.push('Current Role: Senior Business Architect');
-  lines.push('Experience: 7+ years');
-  lines.push('Key certs: PEGA CPBA, PEGA CSSA, PMP, CSM');
-  lines.push('Expected CTC: Open to discussion');
-  return lines.join('\\n');
+    '--- ATS KEYWORDS ---',
+    a.atsKeywords || 'Business Architect, Business Analyst, Requirements, Stakeholder Management, Agile, Scrum, PMP, PEGA CPBA, CSSA',
+    '',
+    '--- SALARY RESPONSE ---',
+    'Based on my 7+ years across architecture, delivery, and AI tooling, I am targeting \\u20b912-14L CTC. Happy to discuss structure based on role scope and total package.',
+    '',
+    '--- EVALUATION NOTES ---',
+    a.notes,
+  ].join('\\n');
 }
-
 function openAllActionable() {
   const list = DATA.filter(a => a.status === 'Evaluated' && a.score >= 4.0 && a.url);
   if (!list.length) { alert('No actionable roles with URLs found.'); return; }
   list.forEach(a => window.open(a.url, '_blank'));
 }
 
-function togglePanel(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
-}
-
+// ── Active ──
 function renderActive() {
   const active = DATA.filter(a => ['Applied','Interview','Responded','Offer'].includes(a.status));
   const el = document.getElementById('active-section');
@@ -338,67 +431,110 @@ function renderActive() {
     const fu = new Date(a.date); fu.setDate(fu.getDate() + 7);
     const days = Math.ceil((fu - new Date()) / 86400000);
     const fuStr = fu.toISOString().split('T')[0];
-    const urgCls = days <= 0 ? 'text-red-400' : days <= 3 ? 'text-yellow-400' : 'text-green-400';
-    const urgLabel = days <= 0 ? 'Overdue' : days + 'd away';
-    const openBtn = a.url ? \`<a href="\${a.url}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 underline">View posting →</a>\` : '';
-    return \`<div class="card rounded-xl p-4 flex items-start justify-between gap-4 mb-3">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-white font-semibold">\${a.company}</span>
-          <span class="text-slate-400 text-sm">\${a.role}</span>
-          <span class="\${scoreClass(a.score)} text-sm">\${a.scoreRaw}</span>
-          \${badge(a.status)}
-          \${openBtn}
-        </div>
-        <div class="text-slate-500 text-xs mt-1">\${a.notes.substring(0,120)}\${a.notes.length>120?'…':''}</div>
-      </div>
-      <div class="text-right shrink-0">
-        <div class="\${urgCls} text-sm font-medium">\${fuStr}</div>
-        <div class="text-xs text-slate-500">Follow-up \${urgLabel}</div>
-      </div>
-    </div>\`;
+    const urgCls = days <= 0 ? 'text-red-400 font-semibold' : days <= 3 ? 'text-yellow-400 font-semibold' : 'text-green-400';
+    const urgLabel = days <= 0 ? 'Follow-up OVERDUE' : 'Follow-up in ' + days + 'd · ' + fuStr;
+    const openBtn = a.url ? '<a href="' + a.url + '" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 underline">View posting →</a>' : '';
+    return '<div class="card rounded-xl p-4 flex items-start justify-between gap-4 mb-2.5">' +
+      '<div class="flex-1 min-w-0">' +
+        '<div class="flex items-center gap-2 flex-wrap">' +
+          '<span class="text-white font-semibold">' + a.company + '</span>' +
+          '<span class="text-slate-400 text-sm">' + a.role + '</span>' +
+          '<span class="' + scoreClass(a.score) + ' text-sm">' + a.scoreRaw + '</span>' +
+          badge(a.status) + openBtn +
+        '</div>' +
+        '<div class="text-slate-500 text-xs mt-1">' + a.notes.substring(0,130) + (a.notes.length>130?'…':'') + '</div>' +
+      '</div>' +
+      '<div class="' + urgCls + ' text-sm shrink-0 text-right whitespace-nowrap">' + urgLabel + '</div>' +
+    '</div>';
   }).join('');
 }
 
+// ── Actionable ──
 function renderActionable() {
   const list = DATA.filter(a => a.status === 'Evaluated' && a.score >= 4.0).sort((a,b) => b.score - a.score);
   const el = document.getElementById('actionable-section');
-  if (!list.length) { el.innerHTML = '<p class="text-slate-600 text-sm">All high-score roles applied or discarded.</p>'; return; }
-  el.innerHTML = list.map((a, i) => {
-    const panelId = 'panel-' + a.num;
-    const hasPoints = a.keyPoints.length > 0;
+  if (!list.length) {
+    el.innerHTML = '<div class="card rounded-xl p-6 text-center"><p class="text-slate-400 text-sm mb-1">All high-score roles applied or discarded.</p><p class="text-slate-600 text-xs">Run a fresh scan to refill the pipeline.</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const pid = 'panel-' + a.num;
     const openBtn = a.url
-      ? \`<a href="\${a.url}" target="_blank" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg font-medium transition-colors whitespace-nowrap">Open job →</a>\`
-      : \`<span class="text-xs text-slate-600 px-3 py-1">No URL</span>\`;
-    const copyBtn = \`<button onclick="copyText(answerPack(DATA.find(x=>x.num===\${a.num})))" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1 rounded-lg font-medium transition-colors whitespace-nowrap">Copy answers</button>\`;
-    const toggleBtn = hasPoints || a.atsKeywords
-      ? \`<button onclick="togglePanel('\${panelId}')" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded transition-colors">Details ▾</button>\`
+      ? '<a href="' + a.url + '" target="_blank" class="copy-btn text-xs bg-blue-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Open job →</a>'
+      : '<span class="text-xs text-slate-700 px-1">No URL</span>';
+    const pts = a.keyPoints.length
+      ? a.keyPoints.map(p => '<li class="flex gap-2"><span class="text-yellow-400 mt-0.5 shrink-0">›</span><span>' + p + '</span></li>').join('')
+      : '<li class="text-slate-600 text-xs">No key points extracted — see full report.</li>';
+    const kwds = a.atsKeywords
+      ? '<div class="mt-3 pt-2 border-t border-slate-700"><p class="text-xs text-slate-500 mb-1 uppercase tracking-wider">ATS Keywords</p><p class="text-xs text-slate-400 bg-slate-900/50 rounded p-2">' + a.atsKeywords + '</p></div>'
       : '';
-    return \`<div class="card rounded-xl p-4 mb-3">
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-slate-500 text-xs">#\${a.num}</span>
-            <span class="text-white font-semibold">\${a.company}</span>
-            <span class="text-slate-400 text-sm">\${a.role}</span>
-          </div>
-          <div class="text-slate-500 text-xs mt-1">\${a.notes.substring(0,120)}\${a.notes.length>120?'…':''}</div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap shrink-0">
-          <span class="\${scoreClass(a.score)} text-xl font-bold">\${a.scoreRaw}</span>
-          \${openBtn}
-          \${copyBtn}
-          \${toggleBtn}
-        </div>
-      </div>
-      <div id="\${panelId}" class="answer-panel mt-3 pt-3 border-t border-slate-700">
-        \${hasPoints ? \`<div class="mb-2"><div class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">Key Selling Points</div><ul class="text-sm text-slate-300 space-y-1">\${a.keyPoints.map(p=>\`<li class="flex gap-2"><span class="text-yellow-400 mt-0.5">›</span><span>\${p}</span></li>\`).join('')}</ul></div>\` : ''}
-        \${a.atsKeywords ? \`<div class="mt-2"><div class="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">ATS Keywords</div><div class="text-xs text-slate-400 bg-slate-800 rounded p-2">\${a.atsKeywords}</div></div>\` : ''}
-      </div>
-    </div>\`;
+    return '<div class="card rounded-xl p-4 mb-3">' +
+      '<div class="flex items-start justify-between gap-3 flex-wrap">' +
+        '<div class="flex-1 min-w-0">' +
+          '<div class="flex items-center gap-2 flex-wrap">' +
+            '<span class="text-slate-500 text-xs">#' + a.num + '</span>' +
+            '<span class="text-white font-semibold">' + a.company + '</span>' +
+            '<span class="text-slate-400 text-sm">' + a.role + '</span>' +
+            '<span class="' + scoreClass(a.score) + ' text-lg font-bold">' + a.scoreRaw + '</span>' +
+          '</div>' +
+          '<div class="text-slate-500 text-xs mt-1">' + a.notes.substring(0,130) + (a.notes.length>130?'…':'') + '</div>' +
+        '</div>' +
+        '<div class="flex items-center gap-1.5 flex-wrap shrink-0 mt-2 md:mt-0">' +
+          openBtn +
+          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').summary,\'Summary copied!\')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Summary</button>' +
+          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').coverLetter,\'Cover letter copied!\')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Cover Letter</button>' +
+          '<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),\'Full pack copied!\')" class="copy-btn text-xs bg-green-900 hover:bg-green-800 text-green-300 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Full Pack</button>' +
+          '<button onclick="togglePanel(\'' + pid + '\')" class="copy-btn text-xs text-slate-500 hover:text-slate-300 px-2 py-1.5 rounded transition-colors">▾ Details</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="' + pid + '" class="panel mt-3 pt-3 border-t border-slate-700/60">' +
+        '<div class="flex gap-1 mb-3">' +
+          '<button data-tab="summary" class="tab-btn active" onclick="switchTab(\'' + pid + '\',\'summary\')">Summary</button>' +
+          '<button data-tab="cover" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'cover\')">Cover Letter</button>' +
+          '<button data-tab="points" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'points\')">Selling Points</button>' +
+          '<button data-tab="fields" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'fields\')">Form Fields</button>' +
+        '</div>' +
+        '<div class="tab-content tc-summary active bg-slate-800/60 rounded-lg p-3 text-sm text-slate-300 leading-relaxed">' + a.summary + '</div>' +
+        '<div class="tab-content tc-cover bg-slate-800/60 rounded-lg p-3 text-sm text-slate-300 leading-relaxed"><pre>' + a.coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div>' +
+        '<div class="tab-content tc-points bg-slate-800/60 rounded-lg p-3"><ul class="text-sm text-slate-300 space-y-1.5">' + pts + '</ul>' + kwds + '</div>' +
+        '<div class="tab-content tc-fields bg-slate-800/60 rounded-lg p-3 text-xs text-slate-300 space-y-1.5 font-mono">' +
+          '<div><span class="text-slate-500">Name:</span> Haneel Teja Nalluru</div>' +
+          '<div><span class="text-slate-500">Email:</span> nalluruhaneel@gmail.com</div>' +
+          '<div><span class="text-slate-500">Phone:</span> +91 9642917777</div>' +
+          '<div><span class="text-slate-500">LinkedIn:</span> linkedin.com/in/haneel-teja-nalluru-8872b0125</div>' +
+          '<div><span class="text-slate-500">Location:</span> Hyderabad, India</div>' +
+          '<div><span class="text-slate-500">Experience:</span> 7+ years</div>' +
+          '<div><span class="text-slate-500">Current company:</span> Novitates Technology Solutions Pvt. Ltd.</div>' +
+          '<div><span class="text-slate-500">Current title:</span> Sr. Business Architect</div>' +
+          '<div><span class="text-slate-500">Expected CTC:</span> &#8377;12&#8211;14L CTC (open to discussion)</div>' +
+          '<div><span class="text-slate-500">Authorization:</span> Indian Citizen &#8212; no visa/sponsorship required</div>' +
+          '<div class="pt-2 mt-1 border-t border-slate-700"><span class="text-slate-500">Salary script:</span> Based on my 7+ years across architecture, delivery, and AI tooling, I am targeting &#8377;12&#8211;14L CTC. Happy to discuss based on role scope and total package.</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
+// ── Inbox ──
+function renderInbox() {
+  const el = document.getElementById('inbox-section');
+  if (!el) return;
+  if (!INBOX.length) { el.innerHTML = '<p class="text-slate-600 text-sm">No pending URLs.</p>'; return; }
+  el.innerHTML = INBOX.map(item =>
+    '<div class="card rounded-xl p-3 mb-2 flex items-center justify-between gap-3">' +
+      '<div class="min-w-0 flex-1">' +
+        '<span class="text-white text-sm font-medium">' + (item.company || '') + '</span>' +
+        '<span class="text-slate-400 text-xs ml-2">' + (item.role || item.url) + '</span>' +
+      '</div>' +
+      '<div class="flex items-center gap-3 shrink-0">' +
+        (item.url ? '<a href="' + item.url + '" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 underline">Open →</a>' : '') +
+        '<span class="text-xs text-slate-600 italic">Pending evaluation</span>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ── Table ──
 function filtered() {
   const q = document.getElementById('search').value.toLowerCase();
   const sf = document.getElementById('status-filter').value;
@@ -409,39 +545,38 @@ function filtered() {
     if (scf && a.score < scf) return false;
     return true;
   }).sort((a, b) => {
-    const av = a[sortKey], bv = b[sortKey];
-    if (sortKey === 'score' || sortKey === 'num') return sortAsc ? av - bv : bv - av;
-    return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+    if (sortKey === 'score' || sortKey === 'num') return sortAsc ? a[sortKey]-b[sortKey] : b[sortKey]-a[sortKey];
+    return sortAsc ? String(a[sortKey]).localeCompare(String(b[sortKey])) : String(b[sortKey]).localeCompare(String(a[sortKey]));
   });
 }
-
 function sort(key) {
   if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = false; }
   ['num','date','score','status'].forEach(k => {
-    const el = document.getElementById('sort-'+k);
+    const el = document.getElementById('sort-' + k);
     if (el) el.textContent = k === sortKey ? (sortAsc ? '↑' : '↓') : '';
   });
   renderTable();
 }
-
 function renderTable() {
   const rows = filtered();
   document.getElementById('pipeline-body').innerHTML = rows.map(a => {
-    const applyCell = a.url
-      ? \`<a href="\${a.url}" target="_blank" class="text-blue-400 hover:text-blue-300 text-xs underline whitespace-nowrap">Open →</a>\`
-      : \`<span class="text-slate-700 text-xs">—</span>\`;
-    return \`<tr class="border-t border-slate-800/60">
-      <td class="px-3 py-2.5 text-slate-600">\${a.num}</td>
-      <td class="px-3 py-2.5 text-slate-400 whitespace-nowrap">\${a.date}</td>
-      <td class="px-3 py-2.5 text-white font-medium whitespace-nowrap">\${a.company}</td>
-      <td class="px-3 py-2.5 text-slate-300">\${a.role}</td>
-      <td class="px-3 py-2.5 \${scoreClass(a.score)} whitespace-nowrap">\${a.scoreRaw}</td>
-      <td class="px-3 py-2.5">\${badge(a.status)}</td>
-      <td class="px-3 py-2.5">\${applyCell}</td>
-      <td class="px-3 py-2.5 text-slate-500 text-xs max-w-xs truncate" title="\${a.notes.replace(/"/g,'&quot;')}">\${a.notes}</td>
-    </tr>\`;
+    const actions = [];
+    if (a.url) actions.push('<a href="' + a.url + '" target="_blank" class="text-blue-500 hover:text-blue-400 text-xs underline whitespace-nowrap">Open →</a>');
+    if (a.status === 'Evaluated') {
+      actions.push('<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),\'Pack copied!\')" class="copy-btn text-xs text-slate-600 hover:text-slate-300 transition-colors ml-1" title="Copy full application pack">⎘ Copy</button>');
+    }
+    return '<tr class="border-t border-slate-800/60">' +
+      '<td class="px-3 py-2.5 text-slate-600 text-xs">' + a.num + '</td>' +
+      '<td class="px-3 py-2.5 text-slate-500 whitespace-nowrap text-xs">' + a.date + '</td>' +
+      '<td class="px-3 py-2.5 text-white font-medium whitespace-nowrap">' + a.company + '</td>' +
+      '<td class="px-3 py-2.5 text-slate-300 text-sm">' + a.role + '</td>' +
+      '<td class="px-3 py-2.5 ' + scoreClass(a.score) + ' whitespace-nowrap">' + a.scoreRaw + '</td>' +
+      '<td class="px-3 py-2.5">' + badge(a.status) + '</td>' +
+      '<td class="px-3 py-2.5"><div class="flex items-center gap-1">' + actions.join('') + '</div></td>' +
+      '<td class="px-3 py-2.5 text-slate-500 text-xs max-w-xs truncate" title="' + a.notes.replace(/"/g,'&quot;') + '">' + a.notes + '</td>' +
+    '</tr>';
   }).join('');
-  document.getElementById('row-count').textContent = \`\${rows.length} of \${DATA.length} roles\`;
+  document.getElementById('row-count').textContent = 'Showing ' + rows.length + ' of ' + DATA.length + ' roles';
 }
 
 document.getElementById('search').addEventListener('input', renderTable);
@@ -450,17 +585,22 @@ document.getElementById('score-filter').addEventListener('change', renderTable);
 
 renderActive();
 renderActionable();
+renderInbox();
 renderTable();
-</script>
+<\/script>
 </body>
 </html>`;
 }
 
+// ── main ─────────────────────────────────────────────────────────────────────
+
 const root = __dirname;
 const apps = parseApplications(join(root, 'data', 'applications.md'));
 enrichApplications(apps, root);
+const pendingInbox = parsePendingPipeline(join(root, 'data', 'pipeline.md'));
+const scanHistory = parseScanHistory(join(root, 'data', 'scan-history.tsv'));
 const buildDate = new Date().toISOString().split('T')[0];
-const html = generateHTML(apps, buildDate);
+const html = generateHTML(apps, buildDate, pendingInbox, scanHistory);
 
 mkdirSync(join(root, 'docs'), { recursive: true });
 writeFileSync(join(root, 'docs', 'index.html'), html, 'utf-8');
@@ -469,4 +609,4 @@ const applied = apps.filter(a => a.status === 'Applied').length;
 const actionable = apps.filter(a => a.status === 'Evaluated' && a.score >= 4.0).length;
 const withUrls = apps.filter(a => a.url).length;
 console.log(`✅ Dashboard built: docs/index.html`);
-console.log(`   ${apps.length} total · ${applied} applied · ${actionable} actionable · ${withUrls} with URLs`);
+console.log(`   ${apps.length} total · ${applied} applied · ${actionable} actionable · ${withUrls} with URLs · ${pendingInbox.length} inbox · last scan ${scanHistory.lastDate || 'never'}`);
