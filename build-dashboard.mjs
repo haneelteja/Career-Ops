@@ -54,7 +54,12 @@ function parsePendingPipeline(filePath) {
     if (line.startsWith('## ') && line.trim() !== '## Pending') { inPending = false; continue; }
     if (inPending && line.match(/^- \[ \]/)) {
       const parts = line.replace(/^- \[ \]\s*/, '').split('|').map(s => s.trim());
-      pending.push({ url: parts[0] || '', company: parts[1] || '', role: parts[2] || '' });
+      const allText = parts.join(' ');
+      const verified = allText.includes('✅');
+      const unverified = allText.includes('⚠️');
+      const expPart = parts[3] || '';
+      const exp = /\d/.test(expPart) && !expPart.includes('✅') && !expPart.includes('⚠️') ? expPart : '';
+      pending.push({ url: parts[0] || '', company: parts[1] || '', role: parts[2] || '', exp, verified, unverified });
     }
   }
   return pending;
@@ -287,10 +292,15 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
   ${pendingCount > 0 ? `
   <!-- Pipeline Inbox -->
   <section class="mb-8">
-    <h2 class="text-xs font-semibold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-      <span class="text-blue-400">●</span> Pipeline Inbox
-      <span class="text-slate-600 normal-case font-normal">(New URLs to evaluate — paste into Claude)</span>
-    </h2>
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <h2 class="text-xs font-semibold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
+        <span class="text-blue-400">●</span> Pipeline Inbox
+        <span class="text-green-500 normal-case font-normal">${pendingInbox.filter(i=>i.verified).length} verified live</span>
+        <span class="text-slate-700">·</span>
+        <span class="text-yellow-600 normal-case font-normal">${pendingInbox.filter(i=>i.unverified).length} to verify</span>
+      </h2>
+      <span class="text-xs text-slate-600">Open verified jobs directly · unverified need a manual check first</span>
+    </div>
     <div id="inbox-section"></div>
   </section>
   ` : ''}
@@ -520,18 +530,30 @@ function renderInbox() {
   const el = document.getElementById('inbox-section');
   if (!el) return;
   if (!INBOX.length) { el.innerHTML = '<p class="text-slate-600 text-sm">No pending URLs.</p>'; return; }
-  el.innerHTML = INBOX.map(item =>
-    '<div class="card rounded-xl p-3 mb-2 flex items-center justify-between gap-3">' +
+  const sorted = [...INBOX].sort((a,b) => (b.verified?1:0)-(a.verified?1:0));
+  el.innerHTML = sorted.map(item => {
+    const borderCls = item.verified ? 'border-l-[3px] border-l-green-600' : item.unverified ? 'border-l-[3px] border-l-yellow-700' : 'border-l-[3px] border-l-slate-700';
+    const vbadge = item.verified
+      ? '<span class="text-xs bg-green-900/60 text-green-400 px-2 py-0.5 rounded font-medium">✅ Verified Live</span>'
+      : item.unverified
+        ? '<span class="text-xs bg-yellow-900/30 text-yellow-600 px-2 py-0.5 rounded font-medium">⚠️ Verify first</span>'
+        : '';
+    const expBadge = item.exp ? '<span class="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">' + item.exp + '</span>' : '';
+    const safeUrl = (item.url||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<div class="card rounded-xl p-3 mb-2 flex items-center justify-between gap-3 ' + borderCls + '">' +
       '<div class="min-w-0 flex-1">' +
-        '<span class="text-white text-sm font-medium">' + (item.company || '') + '</span>' +
-        '<span class="text-slate-400 text-xs ml-2">' + (item.role || item.url) + '</span>' +
+        '<div class="flex items-center gap-2 flex-wrap">' +
+          '<span class="text-white text-sm font-semibold">' + (item.company||'') + '</span>' +
+          '<span class="text-slate-400 text-xs">' + (item.role||'') + '</span>' +
+          expBadge + vbadge +
+        '</div>' +
       '</div>' +
-      '<div class="flex items-center gap-3 shrink-0">' +
-        (item.url ? '<a href="' + item.url + '" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 underline">Open →</a>' : '') +
-        '<span class="text-xs text-slate-600 italic">Pending evaluation</span>' +
+      '<div class="flex items-center gap-2 shrink-0">' +
+        '<button onclick="navigator.clipboard.writeText(\'' + safeUrl + '\').then(()=>showToast(\'URL copied!\'))" class="copy-btn text-xs text-slate-600 hover:text-slate-400 px-2 py-1.5 transition-colors" title="Copy URL">⎘</button>' +
+        (item.url ? '<a href="' + item.url + '" target="_blank" class="copy-btn text-xs bg-blue-800 hover:bg-blue-700 text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Open Job →</a>' : '') +
       '</div>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
 }
 
 // ── Table ──
