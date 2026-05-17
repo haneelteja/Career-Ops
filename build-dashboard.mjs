@@ -120,6 +120,16 @@ function computeSummary(a) {
   return 'Certified Business Architect with 7+ years bridging business strategy and technical delivery. Sr. Business Architect at Novitates: requirements, stakeholder management, release planning (+25% predictability), change management (-35% transition issues), team leadership (10 people). PEGA CPBA + CSSA + PMP + CSM. AI tooling in daily BA practice — 25% documentation time reduction.';
 }
 
+function computeRoleFit(role, status) {
+  const r = (role || '').toLowerCase();
+  if (status === 'Applied') return 'applied';
+  if (/lead business architect|pega lead|lba\b|lead system architect|senior system architect|ssa\b|pega architect|solutions architect|system architect/i.test(role)) return 'too-senior';
+  if (/pega|pega bsa|pega ba|cpba|cssa.*ba/i.test(role)) return 'pega-target';
+  if (/senior business analyst|sr\.?\s*business analyst|business analyst/i.test(role) && !/lead|architect|product owner/i.test(role)) return 'senior-ba';
+  if (/product owner|product manager|data business|gen ai|scrum master|project manager|architect/i.test(role)) return 'not-pega';
+  return 'other';
+}
+
 function computeCoverLetter(a) {
   const pt1 = a.keyPoints[0] || '7+ years of business analysis and architecture experience';
   const pt2 = a.keyPoints[1] || 'dual PEGA certification (CPBA + CSSA) alongside PMP and CSM';
@@ -163,6 +173,20 @@ function enrichApplications(apps, root) {
     }
     app.summary = computeSummary(app);
     app.coverLetter = computeCoverLetter(app);
+    app.roleFit = computeRoleFit(app.role, app.status);
+    const slug = app.company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const dateSlug = app.date || '';
+    const pdfCandidates = [
+      join(root, 'output', `cv-haneel-teja-nalluru-${slug}-${dateSlug}.pdf`),
+      join(root, 'output', `cv-haneel-teja-nalluru-${slug}-${app.role.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${dateSlug}.pdf`),
+    ];
+    const padded = String(app.num).padStart(3, '0');
+    const reportSlug = existsSync(reportsDir)
+      ? readdirSync(reportsDir).find(f => f.startsWith(padded + '-'))?.replace(/\.md$/, '')
+      : null;
+    if (reportSlug) pdfCandidates.unshift(join(root, 'output', `cv-haneel-teja-nalluru-${reportSlug.replace(/^\d{3}-/, '')}.pdf`));
+    app.pdfPath = pdfCandidates.find(p => existsSync(p)) || null;
+    app.isReviewBatch = app.date === '2026-05-17' && app.num >= 61;
   }
   return apps;
 }
@@ -177,6 +201,8 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
   const discarded = apps.filter(a => a.status === 'Discarded' || a.status === 'SKIP').length;
   const pendingCount = pendingInbox.length;
   const lastScan = scanHistory.lastDate || 'Never';
+  const reviewBatch = apps.filter(a => a.isReviewBatch);
+  const pegaTargets = apps.filter(a => (a.roleFit === 'pega-target' || a.roleFit === 'senior-ba') && a.status === 'Evaluated' && a.score >= 4.0);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -218,6 +244,13 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
     .tab-content { display:none; }
     .tab-content.active { display:block; }
     pre { white-space:pre-wrap; word-break:break-word; font-family:inherit; }
+    .fit-pega-target { background:#14532d; color:#86efac; }
+    .fit-senior-ba { background:#1e3a5f; color:#93c5fd; }
+    .fit-too-senior { background:#3f1515; color:#fca5a5; }
+    .fit-not-pega { background:#422006; color:#fcd34d; }
+    .fit-applied { background:#166534; color:#bbf7d0; }
+    .decision-apply { box-shadow: inset 0 0 0 2px #4ade80; }
+    .decision-skip { opacity: 0.55; }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-6">
@@ -266,6 +299,25 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
     <span class="text-slate-700">·</span>
     <span>Refresh after scan: <code class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono">npm run deploy</code></span>
   </div>
+
+  <!-- Targeting + Review Queue -->
+  <section class="mb-8">
+    <div class="card rounded-xl px-4 py-3 mb-4 border border-emerald-800/40 bg-emerald-950/20">
+      <p class="text-sm text-emerald-200/90"><strong>Your target:</strong> Senior Business Analyst or Business Analyst with <strong>Pega</strong> in the role/JD. Lead/LBA/SSA/Architect roles are marked <span class="text-red-300">Too senior</span> — review queue below for today's batch (${reviewBatch.length} roles).</p>
+      <p class="text-xs text-slate-500 mt-1">Mark roles <strong>Apply</strong> or <strong>Skip</strong>, then click <strong>Copy decisions for agent</strong> and paste in Cursor — agent will upload resume and submit after you confirm.</p>
+    </div>
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <h2 class="text-xs font-semibold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
+        <span class="text-emerald-400">●</span> Review Queue
+        <span class="text-slate-600 normal-case font-normal">(2026-05-17 batch · ${pegaTargets.length} Pega/Sr BA ≥4.0)</span>
+      </h2>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="exportDecisions()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">Copy decisions for agent</button>
+        <button onclick="clearDecisions()" class="text-xs text-slate-500 hover:text-slate-300 px-2 py-1.5">Clear marks</button>
+      </div>
+    </div>
+    <div id="review-section"></div>
+  </section>
 
   <!-- Active Applications -->
   <section class="mb-8">
@@ -328,6 +380,13 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
           <option value="3.5">≥ 3.5</option>
           <option value="3">≥ 3.0</option>
         </select>
+        <select id="fit-filter">
+          <option value="">All fit</option>
+          <option value="pega-target">Pega target</option>
+          <option value="senior-ba">Senior BA</option>
+          <option value="too-senior">Too senior</option>
+          <option value="review-batch">Today's batch</option>
+        </select>
       </div>
     </div>
     <div class="overflow-x-auto rounded-xl border border-slate-700">
@@ -338,6 +397,7 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
             <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('date')">Date <span id="sort-date"></span></th>
             <th class="px-3 py-2.5 text-left">Company</th>
             <th class="px-3 py-2.5 text-left">Role</th>
+            <th class="px-3 py-2.5 text-left">Fit</th>
             <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('score')">Score <span id="sort-score"></span></th>
             <th class="px-3 py-2.5 text-left cursor-pointer hover:text-white select-none" onclick="sort('status')">Status <span id="sort-status"></span></th>
             <th class="px-3 py-2.5 text-left">Actions</th>
@@ -366,6 +426,29 @@ function badge(s) {
   const key = (s || 'SKIP').replace(/[^a-zA-Z]/g,'');
   return '<span class="px-2 py-0.5 rounded text-xs font-medium badge-' + key + '">' + s + '</span>';
 }
+function fitBadge(fit) {
+  const labels = { 'pega-target':'Pega target', 'senior-ba':'Senior BA', 'too-senior':'Too senior', 'not-pega':'Not Pega', 'applied':'Applied', 'other':'Other' };
+  return '<span class="px-2 py-0.5 rounded text-xs font-medium fit-' + (fit||'other') + '">' + (labels[fit]||fit) + '</span>';
+}
+const DECISION_KEY = 'careerOpsDecisions';
+function getDecisions() { try { return JSON.parse(localStorage.getItem(DECISION_KEY)||'{}'); } catch(e) { return {}; } }
+function setDecision(num, action) {
+  const d = getDecisions();
+  if (action) d[num] = action; else delete d[num];
+  localStorage.setItem(DECISION_KEY, JSON.stringify(d));
+  renderReview();
+  renderTable();
+}
+function exportDecisions() {
+  const d = getDecisions();
+  const lines = Object.entries(d).map(([num, action]) => {
+    const a = DATA.find(x => x.num == num);
+    return action.toUpperCase() + ' #' + num + ' ' + (a ? a.company + ' — ' + a.role : '') + (a && a.url ? ' | ' + a.url : '');
+  });
+  const text = lines.length ? 'Career-Ops review decisions:\\n' + lines.join('\\n') + '\\n\\nPlease apply to APPLY roles (upload resume + submit). Skip SKIP roles.' : 'No decisions marked yet. Use Apply/Skip on the review queue.';
+  copy(text, 'Decisions copied for agent!');
+}
+function clearDecisions() { localStorage.removeItem(DECISION_KEY); renderReview(); renderTable(); showToast('Cleared'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg || 'Copied!';
@@ -525,6 +608,39 @@ function renderActionable() {
   }).join('');
 }
 
+// ── Review queue ──
+function renderReview() {
+  const el = document.getElementById('review-section');
+  if (!el) return;
+  const decisions = getDecisions();
+  const batch = DATA.filter(a => a.isReviewBatch).sort((a,b) => b.num - a.num);
+  if (!batch.length) { el.innerHTML = '<p class="text-slate-600 text-sm">No batch roles.</p>'; return; }
+  el.innerHTML = batch.map(a => {
+    const dec = decisions[a.num];
+    const cardCls = 'card rounded-xl p-4 mb-3 ' + (dec === 'apply' ? 'decision-apply' : dec === 'skip' ? 'decision-skip' : '');
+    const rec = a.score >= 4.0 && (a.roleFit === 'pega-target' || a.roleFit === 'senior-ba') ? '<span class="text-xs text-emerald-400 font-medium">Recommended</span>' : '';
+    return '<div class="' + cardCls + '">' +
+      '<div class="flex flex-wrap items-start justify-between gap-3">' +
+        '<div class="min-w-0 flex-1">' +
+          '<div class="flex items-center gap-2 flex-wrap mb-1">' +
+            '<span class="text-white font-semibold">#' + a.num + ' ' + a.company + '</span>' +
+            fitBadge(a.roleFit) + badge(a.status) + rec +
+          '</div>' +
+          '<div class="text-slate-300 text-sm mb-1">' + a.role + '</div>' +
+          '<div class="' + scoreClass(a.score) + ' text-sm font-medium">' + a.scoreRaw + '</div>' +
+          '<p class="text-slate-500 text-xs mt-2 line-clamp-2">' + (a.notes||'') + '</p>' +
+        '</div>' +
+        '<div class="flex flex-col gap-2 shrink-0">' +
+          '<button onclick="setDecision(' + a.num + ',\\'apply\\')" class="text-xs px-3 py-1.5 rounded-lg font-medium ' + (dec==='apply'?'bg-green-600 text-white':'bg-slate-700 text-slate-200 hover:bg-green-800') + '">Apply</button>' +
+          '<button onclick="setDecision(' + a.num + ',\\'skip\\')" class="text-xs px-3 py-1.5 rounded-lg font-medium ' + (dec==='skip'?'bg-slate-600 text-white':'bg-slate-800 text-slate-400 hover:bg-slate-600') + '">Skip</button>' +
+          (a.url ? '<a href="' + a.url + '" target="_blank" class="text-xs text-center text-blue-400 hover:text-blue-300">Open job →</a>' : '') +
+          (a.reportFile ? '<a href="' + a.reportFile + '" target="_blank" class="text-xs text-center text-slate-500 hover:text-slate-300">Report</a>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 // ── Inbox ──
 function renderInbox() {
   const el = document.getElementById('inbox-section');
@@ -561,10 +677,13 @@ function filtered() {
   const q = document.getElementById('search').value.toLowerCase();
   const sf = document.getElementById('status-filter').value;
   const scf = parseFloat(document.getElementById('score-filter').value) || 0;
+  const ff = document.getElementById('fit-filter')?.value || '';
   return DATA.filter(a => {
     if (q && !a.company.toLowerCase().includes(q) && !a.role.toLowerCase().includes(q) && !a.notes.toLowerCase().includes(q)) return false;
     if (sf && a.status !== sf) return false;
     if (scf && a.score < scf) return false;
+    if (ff === 'review-batch' && !a.isReviewBatch) return false;
+    if (ff && ff !== 'review-batch' && a.roleFit !== ff) return false;
     return true;
   }).sort((a, b) => {
     if (sortKey === 'score' || sortKey === 'num') return sortAsc ? a[sortKey]-b[sortKey] : b[sortKey]-a[sortKey];
@@ -592,6 +711,7 @@ function renderTable() {
       '<td class="px-3 py-2.5 text-slate-500 whitespace-nowrap text-xs">' + a.date + '</td>' +
       '<td class="px-3 py-2.5 text-white font-medium whitespace-nowrap">' + a.company + '</td>' +
       '<td class="px-3 py-2.5 text-slate-300 text-sm">' + a.role + '</td>' +
+      '<td class="px-3 py-2.5 whitespace-nowrap">' + fitBadge(a.roleFit) + '</td>' +
       '<td class="px-3 py-2.5 ' + scoreClass(a.score) + ' whitespace-nowrap">' + a.scoreRaw + '</td>' +
       '<td class="px-3 py-2.5">' + badge(a.status) + '</td>' +
       '<td class="px-3 py-2.5"><div class="flex items-center gap-1">' + actions.join('') + '</div></td>' +
@@ -604,9 +724,12 @@ function renderTable() {
 document.getElementById('search').addEventListener('input', renderTable);
 document.getElementById('status-filter').addEventListener('change', renderTable);
 document.getElementById('score-filter').addEventListener('change', renderTable);
+const fitFilterEl = document.getElementById('fit-filter');
+if (fitFilterEl) fitFilterEl.addEventListener('change', renderTable);
 
 renderActive();
 renderActionable();
+renderReview();
 renderInbox();
 renderTable();
 <\/script>
