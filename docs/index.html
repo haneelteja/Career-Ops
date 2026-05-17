@@ -354,18 +354,18 @@ function renderActionable() {
         '</div>' +
         '<div class="flex items-center gap-1.5 flex-wrap shrink-0 mt-2 md:mt-0">' +
           openBtn +
-          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').summary,'Summary copied!')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Summary</button>' +
-          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').coverLetter,'Cover letter copied!')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Cover Letter</button>' +
-          '<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),'Full pack copied!')" class="copy-btn text-xs bg-green-900 hover:bg-green-800 text-green-300 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Full Pack</button>' +
-          '<button onclick="togglePanel('' + pid + '')" class="copy-btn text-xs text-slate-500 hover:text-slate-300 px-2 py-1.5 rounded transition-colors">▾ Details</button>' +
+          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').summary,\'Summary copied!\')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Summary</button>' +
+          '<button onclick="copy(DATA.find(x=>x.num===' + a.num + ').coverLetter,\'Cover letter copied!\')" class="copy-btn text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Cover Letter</button>' +
+          '<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),\'Full pack copied!\')" class="copy-btn text-xs bg-green-900 hover:bg-green-800 text-green-300 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Copy Full Pack</button>' +
+          '<button onclick="togglePanel(\'' + pid + '\')" class="copy-btn text-xs text-slate-500 hover:text-slate-300 px-2 py-1.5 rounded transition-colors">▾ Details</button>' +
         '</div>' +
       '</div>' +
       '<div id="' + pid + '" class="panel mt-3 pt-3 border-t border-slate-700/60">' +
         '<div class="flex gap-1 mb-3">' +
-          '<button data-tab="summary" class="tab-btn active" onclick="switchTab('' + pid + '','summary')">Summary</button>' +
-          '<button data-tab="cover" class="tab-btn" onclick="switchTab('' + pid + '','cover')">Cover Letter</button>' +
-          '<button data-tab="points" class="tab-btn" onclick="switchTab('' + pid + '','points')">Selling Points</button>' +
-          '<button data-tab="fields" class="tab-btn" onclick="switchTab('' + pid + '','fields')">Form Fields</button>' +
+          '<button data-tab="summary" class="tab-btn active" onclick="switchTab(\'' + pid + '\',\'summary\')">Summary</button>' +
+          '<button data-tab="cover" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'cover\')">Cover Letter</button>' +
+          '<button data-tab="points" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'points\')">Selling Points</button>' +
+          '<button data-tab="fields" class="tab-btn" onclick="switchTab(\'' + pid + '\',\'fields\')">Form Fields</button>' +
         '</div>' +
         '<div class="tab-content tc-summary active bg-slate-800/60 rounded-lg p-3 text-sm text-slate-300 leading-relaxed">' + a.summary + '</div>' +
         '<div class="tab-content tc-cover bg-slate-800/60 rounded-lg p-3 text-sm text-slate-300 leading-relaxed"><pre>' + a.coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div>' +
@@ -435,7 +435,7 @@ function renderInbox() {
         ? '<span class="text-xs bg-yellow-900/30 text-yellow-600 px-2 py-0.5 rounded font-medium">⚠️ Verify first</span>'
         : '';
     const expBadge = item.exp ? '<span class="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">' + item.exp + '</span>' : '';
-    const safeUrl = (item.url||'').replace(/\/g,'\\').replace(/'/g,"\'");
+    const safeUrl = (item.url||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     return '<div class="card rounded-xl p-3 mb-2 flex items-center justify-between gap-3 ' + borderCls + '">' +
       '<div class="min-w-0 flex-1">' +
         '<div class="flex items-center gap-2 flex-wrap">' +
@@ -445,7 +445,7 @@ function renderInbox() {
         '</div>' +
       '</div>' +
       '<div class="flex items-center gap-2 shrink-0">' +
-        '<button onclick="navigator.clipboard.writeText('' + safeUrl + '').then(()=>showToast('URL copied!'))" class="copy-btn text-xs text-slate-600 hover:text-slate-400 px-2 py-1.5 transition-colors" title="Copy URL">⎘</button>' +
+        '<button onclick="navigator.clipboard.writeText(\'' + safeUrl + '\').then(()=>showToast(\'URL copied!\'))" class="copy-btn text-xs text-slate-600 hover:text-slate-400 px-2 py-1.5 transition-colors" title="Copy URL">⎘</button>' +
         (item.url ? '<a href="' + item.url + '" target="_blank" class="copy-btn text-xs bg-blue-800 hover:bg-blue-700 text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap">Open Job →</a>' : '') +
       '</div>' +
     '</div>';
@@ -484,7 +484,7 @@ function renderTable() {
     const actions = [];
     if (a.url) actions.push('<a href="' + a.url + '" target="_blank" class="text-blue-500 hover:text-blue-400 text-xs underline whitespace-nowrap">Open →</a>');
     if (a.status === 'Evaluated') {
-      actions.push('<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),'Pack copied!')" class="copy-btn text-xs text-slate-600 hover:text-slate-300 transition-colors ml-1" title="Copy full application pack">⎘ Copy</button>');
+      actions.push('<button onclick="copy(genFullPack(DATA.find(x=>x.num===' + a.num + ')),\'Pack copied!\')" class="copy-btn text-xs text-slate-600 hover:text-slate-300 transition-colors ml-1" title="Copy full application pack">⎘ Copy</button>');
     }
     return '<tr class="border-t border-slate-800/60">' +
       '<td class="px-3 py-2.5 text-slate-600 text-xs">' + a.num + '</td>' +
