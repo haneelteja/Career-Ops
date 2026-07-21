@@ -65,4 +65,14 @@ Si el score final es >= 4.5, generar borrador de respuestas para el formulario d
 ## Paso 5 — Actualizar Tracker
 Registrar en `data/applications.md` con todas las columnas incluyendo Report y PDF en ✅.
 
+## Paso 6 — Submit (optional)
+
+If `config/profile.yml` → `application.auto_submit_after_verification: true` **and** score ≥ `min_score_to_submit`:
+
+1. Complete verification gate in `modes/apply.md` (liveness + user confirm if required)
+2. Run apply workflow: upload PDF, fill form, submit via Playwright
+3. Set tracker status to `Applied`
+
+If score is below threshold or user has not confirmed, stop after Paso 5 with recommendation only.
+
 **Si algún paso falla**, continuar con los siguientes y marcar el paso fallido como pendiente en el tracker.

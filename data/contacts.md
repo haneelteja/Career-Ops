@@ -1,53 +1,69 @@
 # Pega Network Contacts
 
-Referral contacts at Pega partner companies. Use `/career-ops contacto` to draft outreach messages.
+Referral contacts at Pega partner companies and **close friends** (inner circle). Use for warm outreach before cold applies.
 
-| Company | Contact | Notes |
-|---------|---------|-------|
-| Pegasystems | Vikas | Direct Pega company |
-| Lloyds Banking Group | Vikas | UK banking MNC |
-| Atmecs Technologies | Ravi Velagapudi | Pega partner |
-| EAI Systems | Vikas | Pega partner |
-| LTIMindtree | Vikas | Large IT MNC |
-| Wells Fargo | Pavanika | US bank, India offices |
-| Eclate Prime | Prashanth Tunuguntla | Pega partner |
-| Virtusa | Pradeep Mantri | IT services MNC |
-| Alter Domus | — | Fund services MNC |
-| Cognizant | — | Large IT MNC |
-| Capgemini | — | Large IT MNC |
-| Ai4Process | — | AI + Pega focused |
-| Aaseya Technologies | — | India-based Pega partner |
-| Accenture | — | Large MNC, Pega partner |
-| Verizon | — | US telco MNC |
-| Accenture LLP | — | Large MNC |
-| Adqura Ltd. | — | Pega partner |
-| Areteans Technology | — | Pega-specialist consulting |
-| Coforge | — | IT MNC, India HQ |
-| Datacom Systems Limited | — | Pega partner |
-| Ernst & Young LLP | — | Big 4 consulting |
-| FUJIFILM Business Innovation | — | Japanese MNC |
-| Hitachi, Ltd. | — | Japanese MNC |
-| Immixgroup, Inc. | — | Pega partner |
-| Infosys Technologies Limited | — | Large IT MNC, India HQ |
-| Integritty | — | Pega partner |
-| ITOCHU (CTC) | — | Japanese MNC |
-| Jetty Technologies Limited | — | Pega partner |
-| Labb Consulting | — | Pega partner |
-| Maantic Inc. | — | Pega partner |
-| NSSOL (NS Solutions Corporation) | — | Japanese IT MNC |
-| Rulesware LLC | — | Pega-specialist partner |
-| Sopra Steria Group | — | European IT MNC |
-| Tata Consultancy Services Ltd. | — | Largest IT MNC, India HQ |
-| Tech Mahindra Limited | — | Large IT MNC, India |
-| USU AG | — | German IT company |
+---
 
-## Outreach Priority
+## Close friends — inner circle
 
-**Warm contacts (reach out first):**
-1. Vikas — Pegasystems, Lloyds, Installers, EAI Systems, LTIMindtree
-2. Ravi Velagapudi — Atmecs Technologies
-3. Pavanika — Wells Fargo
-4. Prashanth Tunuguntla — Eclate Prime
-5. Pradeep Mantri — Virtusa
+| Name | LinkedIn | Current role / company | Referral power (for you) |
+|------|----------|------------------------|---------------------------|
+| **Saivikas (Vikas) Tunuguntla** | [linkedin.com/in/saivikas-tunuguntla-2320b2b8](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Product Engineering Manager, **ArcelorMittal** (ex Credera, Areteans, **Pegasystems**) | **ArcelorMittal** GCC Hyderabad · Credera network · Pega ecosystem |
+| **Pradeep Mantri** | [linkedin.com/in/mantri-pradeep-807080119](https://www.linkedin.com/in/mantri-pradeep-807080119/) | Lead Business Analyst, **Virtusa** (also Accenture) | **Virtusa** Pega BA/BSA · Hyderabad roles |
+| **Ravi Velagapudi** | [linkedin.com/in/ravi-velagapudi-a507971](https://www.linkedin.com/in/ravi-velagapudi-a507971/) | **ATMECS** (Santa Clara / global) | Pega partner · India hiring |
+| **Bhanu Prasanth Tunuguntla** | [linkedin.com/in/bhanu-prasanth-tunuguntla-932b9045](https://www.linkedin.com/in/bhanu-prasanth-tunuguntla-932b9045/) | Associate Architect, **Eclatprime** (Eclantiqx) | **Eclatprime** — you applied PEGA BA; internal pulse |
+| **Jagadeesh Tunuguntla** | [linkedin.com/in/jagadeesh-tunuguntla-93669613](https://www.linkedin.com/in/jagadeesh-tunuguntla-93669613/) | Director Finance, **Lonza India** | Finance/exec network — not Pega hiring |
+| **Goutham Parcha** | [linkedin.com/in/gouthamparcha](https://www.linkedin.com/in/gouthamparcha/) | Pega leadership (CSA/CSSA) — **Hyderabad client visits** | **Pegasystems** / enterprise Pega programs |
+| **Sarat Nagabhirava** | [linkedin.com/in/saratnagabhirava](https://www.linkedin.com/in/saratnagabhirava/) | Director, Managed Services & Ops, **REAN Cloud** | AWS/cloud partner — weaker Pega fit; still worth intros |
+| **Vijay B. Vemulapalli** | [linkedin.com/in/vijay-b-vemulapalli](https://www.linkedin.com/in/vijay-b-vemulapalli/) | Principal Consultant / Program Manager (Oil & Gas, **Saudi**) | Weak Pega fit — general career advice only |
 
-**Strategy:** Message warm contacts first asking about open Pega BA/Architect roles before applying cold. A referral from a known contact dramatically improves response rates.
+**Note:** “Vikas” in the old table = **Saivikas Tunuguntla**. Prashanth Tunuguntla (Eclate Prime) is a separate contact — may be related to Bhanu/Jagadeesh/Saivikas.
+
+---
+
+## Company map (who to ping for what)
+
+| Your target | Ask these friends first |
+|-------------|-------------------------|
+| **Virtusa** | Pradeep Mantri |
+| **ArcelorMittal** | Saivikas (Vikas) Tunuguntla |
+| **Eclatprime / Eclate Prime** | Bhanu Prasanth Tunuguntla (applied PEGA BA) |
+| **Credera** | Saivikas (ex Credera Lead Consultant) — you already **Applied** #6 |
+| **Lloyds / banking** | Saivikas (Pega + BFSI path) — no Lloyds employee in circle |
+| **Deloitte / Sutherland** | Pradeep (Virtusa + Accenture) |
+| **Pegasystems / any Pega BA** | Goutham Parcha, Ravi Velagapudi, Bhanu, Saivikas |
+| **Atmecs** | Ravi Velagapudi |
+| **Areteans** | Saivikas (ex Areteans) |
+
+---
+
+## Legacy company table (updated links)
+
+| Company | Contact | LinkedIn | Notes |
+|---------|---------|----------|-------|
+| Pegasystems | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Ex Pegasystems SE |
+| Lloyds Banking Group | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Via Pega/BFSI network — use [LTC Workday](https://lbg.wd3.myworkdayjobs.com/Lloyds_Technology_Centre) |
+| Atmecs Technologies | Ravi Velagapudi | [profile](https://www.linkedin.com/in/ravi-velagapudi-a507971/) | Pega partner |
+| EAI Systems | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Historical |
+| LTIMindtree | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Historical |
+| Wells Fargo | Pavanika | — | Not in inner circle |
+| Eclate Prime / Eclatprime | Bhanu Prasanth Tunuguntla | [profile](https://www.linkedin.com/in/bhanu-prasanth-tunuguntla-932b9045/) | Eclatprime = Eclantiqx on LinkedIn |
+| Virtusa | Pradeep Mantri | [profile](https://www.linkedin.com/in/mantri-pradeep-807080119/) | Lead BA |
+| ArcelorMittal | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | **Current** AMGBT Hyderabad |
+| Credera | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Ex Lead Consultant |
+| Areteans | Saivikas (Vikas) Tunuguntla | [profile](https://www.linkedin.com/in/saivikas-tunuguntla-2320b2b8/) | Ex Solution Consultant |
+
+---
+
+## Outreach priority (close friends)
+
+1. **Pradeep Mantri** — Virtusa Hyderabad **Pega/Sr BA only** (not Digital Health BA)
+2. **Bhanu Prasanth Tunuguntla** — Eclatprime application status + other Pega BA slots
+3. **Saivikas (Vikas) Tunuguntla** — ArcelorMittal + Credera/Areteans intros
+4. **Ravi Velagapudi** — Atmecs Pega roles India
+5. **Goutham Parcha** — Pegasystems / large Pega programs Hyderabad
+6. **Sarat Nagabhirava** — general Pega network intros
+7. **Jagadeesh** — personal support only (finance, not hiring)
+8. **Vijay** — optional (different domain/geo)
+
+**Strategy:** One short LinkedIn/WhatsApp message per friend this week. Ask for **referral or hiring manager intro**, not just “any job.” Share fixed resume path only.

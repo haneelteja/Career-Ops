@@ -69,3 +69,11 @@ location:
   visa_status: "No sponsorship needed"
   # For remote roles outside your country:
   # onsite_availability: "1 week/month in any city"
+
+# Optional: let the agent submit applications after verification (default: false)
+# application:
+#   auto_submit_after_verification: false
+#   min_score_to_submit: 4.0
+#   require_explicit_confirm: true
+#   require_liveness_check: true
+#   screenshot_on_submit: true

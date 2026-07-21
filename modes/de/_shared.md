@@ -165,7 +165,7 @@ In deutschen Stellenanzeigen und Vertragsverhandlungen tauchen Begriffe auf, die
 
 1. Erfahrung oder Kennzahlen erfinden
 2. `cv.md` oder Portfolio-Dateien verändern
-3. Bewerbungen im Namen des Kandidaten absenden
+3. Bewerbungen absenden, **nur wenn** `config/profile.yml` → `application.auto_submit_after_verification: true` und die Prüfung in `modes/apply.md` erfüllt ist
 4. Telefonnummer in generierten Nachrichten teilen
 5. Vergütung unter Marktniveau empfehlen
 6. PDF generieren, ohne vorher die Stellenanzeige gelesen zu haben

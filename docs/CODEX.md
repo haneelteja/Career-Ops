@@ -52,7 +52,7 @@ layer.
 - Treat raw JD text or a job URL as the full auto-pipeline path unless the user explicitly asks for evaluation only.
 - Keep all personalization in `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, or `portals.yml`.
 - Never verify a job’s live status with generic web fetch when Playwright is available.
-- Never submit an application for the user.
+- Submit only when `config/profile.yml` → `application.auto_submit_after_verification` is `true` and `modes/apply.md` verification gate is satisfied; otherwise stop before Submit/Apply.
 - Never add new tracker rows directly to `data/applications.md`; use the TSV addition flow and `merge-tracker.mjs`.
 
 ## Verification

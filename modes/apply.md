@@ -92,12 +92,54 @@ Notas:
 - [Sugerencias de personalización que el candidato debería revisar]
 ```
 
-## Paso 6 — Post-apply (opcional)
+## Verification gate (before any Submit)
 
-Si el candidato confirma que envió la aplicación:
-1. Actualizar estado en `applications.md` de "Evaluada" a "Aplicado"
-2. Actualizar Section G del report con las respuestas finales
-3. Sugerir siguiente paso: `/career-ops contacto` para LinkedIn outreach
+Read `config/profile.yml` → `application` before filling or submitting.
+
+| Check | Required when |
+|-------|----------------|
+| Report exists for this company+role | Always |
+| Tailored PDF generated (or user waived) | Always |
+| Form answers drafted (Section G or Paso 5) | Always |
+| User reviewed report + PDF + answers | `require_explicit_confirm: true` |
+| User said to submit (e.g. "verified, submit", "go ahead and apply") | `require_explicit_confirm: true` |
+| Playwright liveness: title + JD + active Apply/Submit | `require_liveness_check: true` |
+| Score ≥ `min_score_to_submit` | Always (default 4.0); below only with explicit override |
+| No duplicate `Applied` for same company+role | Always |
+
+Present a short checklist to the user when `require_explicit_confirm` is true:
+
+```
+Ready to submit — [Company] — [Role] (Score X.X/5)
+☑ Liveness verified
+☑ PDF: [path]
+☑ Answers drafted (N questions)
+Confirm: reply "verified, submit" to proceed, or edit anything first.
+```
+
+## Paso 6 — Submit on behalf (when enabled)
+
+**Only if** `application.auto_submit_after_verification: true` **and** the verification gate above passes.
+
+1. **Playwright (visible preferred):** Navigate to application URL
+2. **Upload** tailored PDF from `output/` (and cover letter PDF if generated)
+3. **Fill** fields using Paso 5 answers; use profile.yml for contact fields (name, email, phone, LinkedIn)
+4. **Review** filled values in snapshot — do not invent data not in cv.md / profile / report
+5. **Click** Submit / Apply / Send (or locale equivalent)
+6. **Confirm** success page or confirmation email mention in snapshot
+7. If `screenshot_on_submit: true`, save annotated screenshot path in report notes
+
+**If submit fails** (captcha, login wall, broken form): stop, document error, leave status as `Evaluated`, tell user what to complete manually.
+
+**If `auto_submit_after_verification` is false:** stop after Paso 5 — user submits manually.
+
+## Paso 7 — Post-apply
+
+After successful submit (agent or user):
+1. Update status in `applications.md` to `Applied` (edit existing row or merge TSV)
+2. Update report notes with submission date + channel (e.g. LinkedIn, Greenhouse)
+3. Persist final form answers in report (Section G / H)
+4. Suggest `/career-ops contacto` for LinkedIn outreach if relevant
 
 ## Scroll handling
 

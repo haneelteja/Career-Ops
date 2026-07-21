@@ -244,10 +244,34 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 
 **This system is designed for quality, not quantity.** The goal is to help the user find and apply to roles where there is a genuine match -- not to spam companies with mass applications.
 
-- **NEVER submit an application without the user reviewing it first.** Fill forms, draft answers, generate PDFs -- but always STOP before clicking Submit/Send/Apply. The user makes the final call.
-- **Strongly discourage low-fit applications.** If a score is below 4.0/5, explicitly recommend against applying. The user's time and the recruiter's time are both valuable. Only proceed if the user has a specific reason to override the score.
-- **Quality over speed.** A well-targeted application to 5 companies beats a generic blast to 50. Guide the user toward fewer, better applications.
-- **Respect recruiters' time.** Every application a human reads costs someone's attention. Only send what's worth reading.
+### Application submission
+
+Read `config/profile.yml` → `application` on every apply/auto-pipeline flow.
+
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| `auto_submit_after_verification` | `false` | If `true`, agent may click Submit after the verification gate below |
+| `min_score_to_submit` | `4.0` | Do not submit below this global score unless user explicitly overrides |
+| `require_explicit_confirm` | `true` | User must confirm after reviewing report + PDF + form answers (e.g. "verified, submit") |
+| `require_liveness_check` | `true` | Playwright: JD visible + Apply/Submit active before submitting |
+| `screenshot_on_submit` | `true` | Capture confirmation page when possible |
+
+**When `auto_submit_after_verification` is `false` (upstream default):** Fill forms, draft answers, generate PDFs — STOP before Submit/Send/Apply. User clicks submit manually.
+
+**When `auto_submit_after_verification` is `true`:** After the **verification gate** (see `modes/apply.md` § Verification gate + Submit), the agent may complete the application on the user's behalf using Playwright. Still require explicit confirm if `require_explicit_confirm` is true.
+
+**Verification gate (required before any submit):**
+1. Evaluation report + tailored PDF exist
+2. Form answers drafted; user has reviewed them (and PDF if `require_explicit_confirm`)
+3. Posting liveness passed (`require_liveness_check`)
+4. Score ≥ `min_score_to_submit` (or documented user override)
+5. No duplicate `Applied` row for same company+role unless user requests re-apply
+
+After submit: set tracker status to `Applied`, note date/channel in notes, append confirmation to report if screenshot saved.
+
+- **Strongly discourage low-fit applications.** If a score is below 4.0/5, explicitly recommend against applying. Only submit below threshold with explicit user override.
+- **Quality over speed.** A well-targeted application to 5 companies beats a generic blast to 50.
+- **Respect recruiters' time.** Only submit materials worth reading — never invent experience or metrics.
 
 ---
 
