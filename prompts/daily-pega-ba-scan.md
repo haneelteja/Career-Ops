@@ -13,7 +13,7 @@ Read before scanning: `config/profile.yml`, `modes/_profile.md`, `data/pipeline.
 - **Certs:** CPBA + CSSA · PMP · CSM
 - **Experience:** 7+ years
 - **Notice:** 45 days · Current ₹6L · Expected ₹12L
-- **Resume (only — never tailor unless asked):** `/Users/haneelnalluru/Downloads/HaneelTeja_SrBusinessArchitect_Resume.pdf`
+- **Resume (only — never tailor unless asked):** fixed resume configured by `CAREER_OPS_RESUME_PATH`
 
 ---
 

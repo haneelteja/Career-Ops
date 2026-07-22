@@ -9,8 +9,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const resume =
-  '/Users/haneelnalluru/Downloads/HaneelTeja_SrBusinessArchitect_Resume.pdf';
+const resume = process.env.CAREER_OPS_RESUME_PATH;
 
 const OPEN_IN_BROWSER = [
   {
@@ -125,8 +124,12 @@ for (const t of pwTargets) {
 
     const fileInput = page.locator('input[type="file"]').first();
     if (!page.isClosed() && (await fileInput.count().catch(() => 0))) {
-      await fileInput.setInputFiles(resume).catch(() => {});
-      console.log('  ✓ Resume upload attempted');
+      if (resume) {
+        await fileInput.setInputFiles(resume).catch(() => {});
+        console.log('  ✓ Resume upload attempted');
+      } else {
+        console.log('  ⚠ Set CAREER_OPS_RESUME_PATH or upload the resume manually');
+      }
     }
   } catch (err) {
     console.log(`  ⚠ ${err.message}\n`);
