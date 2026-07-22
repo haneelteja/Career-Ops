@@ -30,10 +30,10 @@ All three pages showed a substantive JD and active Apply / “I'm interested” 
 Cloud note: gitignored user-layer files were unavailable in this checkout, so duplicate comparison uses the automation's persisted Jul 21 baseline and the known state supplied for this run.
 
 ### 5. Today's action list
-1. **LinkedIn — Pradeep Mantri (Virtusa referral):**  
+1. **LinkedIn — Pradeep Mantri (Virtusa referral):**
    “Hi Pradeep, I found Virtusa role creq259218 for a Hyderabad Pega BA. It is live today and asks for 6+ years of BA and 3+ years of Pega; I have 7+ years plus CPBA/CSSA. Could you please refer me or connect me with the hiring team? I’ll use my current resume without changes.”
 2. **Apply — Virtusa:** If Pradeep cannot route a referral promptly, apply through the [official ATS](https://www.virtusa.com/careers/job-search/in/hyderabad/pega/pega/creq259218) using only `HaneelTeja_SrBusinessArchitect_Resume.pdf`. Confirm the compensation floor is at least ₹10L.
-3. **Email / LinkedIn — Truviq recruiting:**  
+3. **Email / LinkedIn — Truviq recruiting:**
    “Hi, I applied for the PEGA Business Analyst role in Hyderabad on May 17. The official posting is still live, and I remain interested. Could you confirm whether the team is actively interviewing and share the status of my application?”
 4. **No outreach — Eclatprime:** Bhanu was contacted yesterday; wait 2–3 business days before another follow-up.
 
