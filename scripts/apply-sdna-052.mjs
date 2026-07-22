@@ -8,8 +8,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
-const resume =
-  '/Users/haneelnalluru/Downloads/HaneelTeja_SrBusinessArchitect_Resume.pdf';
+const resume = process.env.CAREER_OPS_RESUME_PATH;
 const jobUrl =
   'https://www.naukri.com/job-listings-senior-business-analyst-sdna-global-hyderabad-chennai-bengaluru-3-to-8-years-080426033041';
 
@@ -78,11 +77,13 @@ await tryFill(page, [
 ], FORM.location);
 
 const fileInput = page.locator('input[type="file"]').first();
-if (await fileInput.count()) {
+if ((await fileInput.count()) && resume) {
   await fileInput.setInputFiles(resume);
   console.log('✓ Resume uploaded:', resume);
+} else if (!resume) {
+  console.log('⚠ Set CAREER_OPS_RESUME_PATH or upload the resume manually');
 } else {
-  console.log('⚠ Upload resume manually:', resume);
+  console.log('⚠ Upload the resume manually');
 }
 
 const shot = resolve(root, 'output/sdna-naukri-filled-2026-05-17.png');

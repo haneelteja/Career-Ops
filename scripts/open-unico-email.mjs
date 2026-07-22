@@ -2,6 +2,7 @@
 /** Open Gmail compose for Unico #40 — attach resume manually if not auto-attached. */
 import { execSync } from 'child_process';
 
+const resume = process.env.CAREER_OPS_RESUME_PATH;
 const to = 'hr@unicoconnect.com';
 const subject = encodeURIComponent(
   'Application — Senior Business Analyst — Haneel Teja Nalluru (Hyderabad)'
@@ -23,5 +24,9 @@ https://www.linkedin.com/in/haneel-teja-nalluru-8872b0125`
 
 const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
 console.log('Opening Gmail compose →', to);
-console.log('Attach: /Users/haneelnalluru/Downloads/HaneelTeja_SrBusinessArchitect_Resume.pdf');
+console.log(
+  resume
+    ? `Attach: ${resume}`
+    : 'Attach your fixed resume manually (or set CAREER_OPS_RESUME_PATH)',
+);
 execSync(`open "${url}"`, { stdio: 'inherit' });

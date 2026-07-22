@@ -268,7 +268,7 @@ function formatReport(all, errors, date) {
 
   let s = `# Fresh job scrape — ${date}\n\n`;
   s += `**Profile:** Haneel · CPBA+CSSA · 7 yrs · Hyderabad · Senior BA / Pega BA · ₹12L expected\n\n`;
-  s += `**Resume:** \`/Users/haneelnalluru/Downloads/HaneelTeja_SrBusinessArchitect_Resume.pdf\`\n\n`;
+  s += `**Resume:** use the fixed resume configured by \`CAREER_OPS_RESUME_PATH\`\n\n`;
 
   s += `## Pega BA / BSA / Business Architect (apply first)\n\n`;
   if (all.pega_ba.length === 0) s += `_No new Pega BA listings after dedup — check LinkedIn/Naukri search links below._\n\n`;
