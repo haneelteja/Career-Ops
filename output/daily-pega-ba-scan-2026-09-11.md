@@ -9,7 +9,7 @@
 
 | Priority | Company | Role | ATS link | Score | Status | Action |
 |---|---|---|---|---:|---|---|
-| 1 | LTIMindtree | Senior Specialist – Business Analysis (Pega data migration) | [Official indexed ATS — job 878491](https://ltimindtree.ripplehire.com/candidate?token=xviyQvbnyYZdGlozXoNm&lang=en&source=CAREERSITE#detail/job/878491) | 4.2/5 | Live, Hyderabad, indexed, Apply active; age and CTC not disclosed | Apply with the fixed résumé; confirm CTC is at least ₹12L when contacted |
+| 1 | LTIMindtree | Senior Specialist – Business Analysis (Pega data migration) | [Official careers index — search 878491](https://www.ltimindtree.com/careers) | 4.2/5 | Live, Hyderabad, indexed, Apply active; age and CTC not disclosed | Apply with the fixed résumé; confirm CTC is at least ₹12L when contacted |
 
 Why it qualifies: the JD names **Pega Business Analyst** as a mandatory skill and focuses on requirements, functional specifications, stakeholders, QA/UAT, Pega App Studio, Constellation templates, and case types. It does not require SQL, ETL, or data engineering. Trade-offs: it asks for 8–12 years while Haneel has 7+ years, and the public ATS does not disclose posting date, employment type, or salary.
 
@@ -30,7 +30,7 @@ Why it qualifies: the JD names **Pega Business Analyst** as a mandatory skill an
 - Comparison used the preserved 2026-09-10 scan state because this cloud checkout omits the gitignored `data/pipeline.md`, profile, and portal configuration.
 
 ### 5. Today's action list
-1. **Apply — LTIMindtree:** Open [job 878491](https://ltimindtree.ripplehire.com/candidate?token=xviyQvbnyYZdGlozXoNm&lang=en&source=CAREERSITE#detail/job/878491) and upload only `HaneelTeja_SrBusinessArchitect_Resume.pdf`. Do not tailor. If asked for expected CTC, enter **₹12L**.
+1. **Apply — LTIMindtree:** Open the [official careers index](https://www.ltimindtree.com/careers), select India, search **878491**, and upload only `HaneelTeja_SrBusinessArchitect_Resume.pdf`. Do not tailor. If asked for expected CTC, enter **₹12L**.
 2. **LinkedIn/WhatsApp — Bhanu:** “Hi Bhanu, quick follow-up on the PEGA BA role I applied for at Eclatprime on 19 May. The official role page is no longer available. Could you please confirm whether hiring is still active and whether my application remains under consideration?”
 3. **LinkedIn/WhatsApp — Pradeep:** “Hi Pradeep, Virtusa's Pega BA requisition CREQ259218 now shows as filled, and I could not find another Pega BA/BSA role for Hyderabad on the official portal. Is the healthcare Pega BA opening shared recently tied to a new official requisition? If yes, could you please send me the ATS link or refer me?”
 
