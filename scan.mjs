@@ -16,8 +16,7 @@
  */
 
 import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
-import yaml from 'js-yaml';
-const parseYaml = yaml.load;
+import { load as parseYaml } from 'js-yaml';
 
 // ── Config ──────────────────────────────────────────────────────────
 
