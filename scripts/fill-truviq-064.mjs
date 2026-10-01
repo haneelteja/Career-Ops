@@ -3,10 +3,15 @@
 import { chromium } from 'playwright';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { me } from './profile-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
-const pdf = resolve(root, 'output/cv-haneel-teja-nalluru-truviq-pega-business-analyst-2026-05-17.pdf');
+const ME = me();
+const pdf = ME.resumePath || resolve(root, `output/${ME.cvPdfPrefix}-truviq-pega-business-analyst-2026-05-17.pdf`);
+const [firstName, ...rest] = ME.name.split(/\s+/);
+const lastName = rest.slice(-1)[0] || '';
+const years = String(parseInt(ME.experience, 10) || '');
 const jobUrl =
   'https://truviqsystems.zohorecruit.in/jobs/Careers/6497000009165211/PEGA-Business-Analyst?source=CareerSite';
 
@@ -38,22 +43,22 @@ await page.getByText("I'm interested").first().click();
 await page.waitForTimeout(2500);
 
 const fields = [
-  ['First Name', 'Haneel'],
-  ['Last Name', 'Nalluru'],
-  ['Email', 'nalluruhaneel@gmail.com'],
-  ['Mobile', '9642917777'],
-  ['Experience in Years', '7'],
-  ['Relevant Experience', '7'],
-  ['Current Employer', 'Novitates Technology Solutions Pvt Ltd'],
+  ['First Name', firstName],
+  ['Last Name', lastName],
+  ['Email', ME.email],
+  ['Mobile', ME.phone.replace(/^\+91[\s-]*/, '').replace(/\D/g, '')],
+  ['Experience in Years', years],
+  ['Relevant Experience', years],
+  ['Current Employer', ME.currentCompany],
   ['Serving Notice Period', 'No'],
   ['Notice Period in Months', '0'],
   ['Expected Joining Date', '06/15/2026'],
-  ['Current Salary', '1200000'],
-  ['Expected Salary', '1400000'],
-  ['Current Location', 'Hyderabad, Telangana'],
-  ['Preferred Location', 'Hyderabad, Telangana'],
-  ['City', 'Hyderabad'],
-  ['LinkedIn', 'https://www.linkedin.com/in/haneel-teja-nalluru-8872b0125'],
+  ['Current Salary', ME.currentCtc],
+  ['Expected Salary', ME.expectedCtc],
+  ['Current Location', ME.location],
+  ['Preferred Location', ME.location],
+  ['City', ME.city],
+  ['LinkedIn', ME.linkedin],
 ];
 for (const [label, val] of fields) await setField(page, label, val);
 

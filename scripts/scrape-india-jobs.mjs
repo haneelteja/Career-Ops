@@ -6,6 +6,9 @@
 
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { chromium } from 'playwright';
+import { me } from './profile-config.mjs';
+
+const ME = me();
 
 const DATE = new Date().toISOString().slice(0, 10);
 const OUT = `output/fresh-jobs-${DATE}.md`;
@@ -267,7 +270,7 @@ function formatReport(all, errors, date) {
   const row = (j) => `| ${j.title.replace(/\|/g, '/')} | ${j.company || '—'} | ${j.location || '—'} | [Apply](${j.url}) | ${j.source} |`;
 
   let s = `# Fresh job scrape — ${date}\n\n`;
-  s += `**Profile:** Haneel · CPBA+CSSA · 7 yrs · Hyderabad · Senior BA / Pega BA · ₹12L expected\n\n`;
+  s += `**Profile:** ${[ME.name.split(/\s+/)[0], ME.experience, ME.city, ME.expectedCtcLabel && ME.expectedCtcLabel + ' expected'].filter(Boolean).join(' · ')} · Senior BA / Pega BA\n\n`;
   s += `**Resume:** use the fixed resume configured by \`CAREER_OPS_RESUME_PATH\`\n\n`;
 
   s += `## Pega BA / BSA / Business Architect (apply first)\n\n`;

@@ -6,17 +6,19 @@
 import { chromium } from 'playwright';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { me } from './profile-config.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
-const resume = process.env.CAREER_OPS_RESUME_PATH;
+const resume = me().resumePath;
 const jobUrl =
   'https://www.naukri.com/job-listings-senior-business-analyst-sdna-global-hyderabad-chennai-bengaluru-3-to-8-years-080426033041';
 
+const ME = me();
 const FORM = {
-  notice: '45',
-  currentCtc: '600000',
-  expectedCtc: '1200000',
-  location: 'Hyderabad',
+  notice: ME.noticeDays,
+  currentCtc: ME.currentCtc,
+  expectedCtc: ME.expectedCtc,
+  location: ME.city,
 };
 
 async function tryFill(page, patterns, value) {
@@ -81,7 +83,7 @@ if ((await fileInput.count()) && resume) {
   await fileInput.setInputFiles(resume);
   console.log('✓ Resume uploaded:', resume);
 } else if (!resume) {
-  console.log('⚠ Set CAREER_OPS_RESUME_PATH or upload the resume manually');
+  console.log('⚠ Set CAREER_OPS_RESUME_PATH (or dashboard.resume_path) or upload the resume manually');
 } else {
   console.log('⚠ Upload the resume manually');
 }

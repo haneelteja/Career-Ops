@@ -5,11 +5,9 @@
  */
 import { chromium } from 'playwright';
 import { execSync } from 'child_process';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { me } from './profile-config.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const resume = process.env.CAREER_OPS_RESUME_PATH;
+const resume = me().resumePath;
 
 const OPEN_IN_BROWSER = [
   {
@@ -39,11 +37,12 @@ const OPEN_IN_BROWSER = [
   },
 ];
 
+const ME = me();
 const FORM = {
-  notice: '45',
-  currentCtc: '600000',
-  expectedCtc: '1200000',
-  location: 'Hyderabad',
+  notice: ME.noticeDays,
+  currentCtc: ME.currentCtc,
+  expectedCtc: ME.expectedCtc,
+  location: ME.city,
 };
 
 async function tryFill(page, patterns, value) {
@@ -128,7 +127,7 @@ for (const t of pwTargets) {
         await fileInput.setInputFiles(resume).catch(() => {});
         console.log('  ✓ Resume upload attempted');
       } else {
-        console.log('  ⚠ Set CAREER_OPS_RESUME_PATH or upload the resume manually');
+        console.log('  ⚠ Set CAREER_OPS_RESUME_PATH (or dashboard.resume_path) or upload the resume manually');
       }
     }
   } catch (err) {
