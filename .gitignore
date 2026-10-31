@@ -8,6 +8,7 @@ reports/*.md
 !reports/.gitkeep
 output/*
 !output/.gitkeep
+!output/daily-pega-ba-scan-*.md
 batch/logs/*
 !batch/logs/.gitkeep
 batch/batch-state.tsv
