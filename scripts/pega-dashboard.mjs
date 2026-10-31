@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
+import { ROOT, me } from './profile-config.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// Personal values come from config/profile.yml (gitignored) — see scripts/README.md.
+const ME = me();
 
 // ── parsers ──────────────────────────────────────────────────────────────────
 
@@ -112,12 +113,12 @@ function computeSummary(a) {
   const isPega = /pega/i.test(a.role + ' ' + a.company);
   const isPO = /product owner|product manager/i.test(a.role);
   if (isPega) {
-    return 'PEGA Certified Business Architect (CPBA + CSSA) with 7+ years of enterprise Pega delivery. Sr. Business Architect at Novitates — requirements, solution design, and releases across financial services. Improved release quality 25%, reduced post-deployment defects 20%. PMP + CSM certified. Spans both Pega development AND business architecture — a rare dual profile.';
+    return ME.summaries.pega || ME.summaries.default || '';
   }
   if (isPO) {
-    return 'Certified Product Owner and Business Analyst with 7+ years of dual-track delivery. Owned backlogs and roadmaps at Mintage (marketing app +15% engagement, real estate app +20% satisfaction) and Novitates (release planning +25% predictability). PMP + CSM + PEGA CPBA certified. AI tools in daily practice (ChatGPT, Perplexity, Fireflies.ai) — reduced documentation time 25%.';
+    return ME.summaries.product_owner || ME.summaries.default || '';
   }
-  return 'Certified Business Architect with 7+ years bridging business strategy and technical delivery. Sr. Business Architect at Novitates: requirements, stakeholder management, release planning (+25% predictability), change management (-35% transition issues), team leadership (10 people). PEGA CPBA + CSSA + PMP + CSM. AI tooling in daily BA practice — 25% documentation time reduction.';
+  return ME.summaries.default || '';
 }
 
 function computeRoleFit(role, status) {
@@ -131,21 +132,23 @@ function computeRoleFit(role, status) {
 }
 
 function computeCoverLetter(a) {
-  const pt1 = a.keyPoints[0] || '7+ years of business analysis and architecture experience';
-  const pt2 = a.keyPoints[1] || 'dual PEGA certification (CPBA + CSSA) alongside PMP and CSM';
-  const pt3 = a.keyPoints[2] || 'led cross-functional teams of 10+ with measurable delivery outcomes';
+  const cl = ME.coverLetter;
+  const defaults = cl.default_points || [];
+  const pt1 = a.keyPoints[0] || defaults[0] || '';
+  const pt2 = a.keyPoints[1] || defaults[1] || '';
+  const pt3 = a.keyPoints[2] || defaults[2] || '';
+  const intro = (cl.intro || '').replace(/\{role\}/g, a.role).replace(/\{company\}/g, a.company);
+  const signature = [ME.name, [ME.email, ME.phone].filter(Boolean).join(' | '), ME.linkedin].filter(Boolean).join('\n');
   return `Dear Hiring Team,
 
-I am writing to apply for the ${a.role} position at ${a.company}. With 7+ years spanning business architecture, Pega delivery, and technical project management, I offer both technical depth and business leadership — a combination that directly maps to this role.
+${intro}
 
-${pt1}. ${pt2}. What sets me apart is that I have been the developer, the project manager, and the business architect. That full-lifecycle experience means I resolve requirement gaps faster and reduce costly handoff friction. Track record: +25% release predictability, -35% transition issues, -50% implementation time.
+${pt1}. ${pt2}. ${cl.differentiator || ''}
 
 ${pt3}. I am confident I can add immediate value at ${a.company} and look forward to discussing this opportunity.
 
 Best regards,
-Haneel Teja Nalluru
-nalluruhaneel@gmail.com | +91 9642917777
-linkedin.com/in/haneel-teja-nalluru-8872b0125`;
+${signature}`;
 }
 
 // ── enrich ───────────────────────────────────────────────────────────────────
@@ -177,14 +180,14 @@ function enrichApplications(apps, root) {
     const slug = app.company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const dateSlug = app.date || '';
     const pdfCandidates = [
-      join(root, 'output', `cv-haneel-teja-nalluru-${slug}-${dateSlug}.pdf`),
-      join(root, 'output', `cv-haneel-teja-nalluru-${slug}-${app.role.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${dateSlug}.pdf`),
+      join(root, 'output', `${ME.cvPdfPrefix}-${slug}-${dateSlug}.pdf`),
+      join(root, 'output', `${ME.cvPdfPrefix}-${slug}-${app.role.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${dateSlug}.pdf`),
     ];
     const padded = String(app.num).padStart(3, '0');
     const reportSlug = existsSync(reportsDir)
       ? readdirSync(reportsDir).find(f => f.startsWith(padded + '-'))?.replace(/\.md$/, '')
       : null;
-    if (reportSlug) pdfCandidates.unshift(join(root, 'output', `cv-haneel-teja-nalluru-${reportSlug.replace(/^\d{3}-/, '')}.pdf`));
+    if (reportSlug) pdfCandidates.unshift(join(root, 'output', `${ME.cvPdfPrefix}-${reportSlug.replace(/^\d{3}-/, '')}.pdf`));
     app.pdfPath = pdfCandidates.find(p => existsSync(p)) || null;
     app.isReviewBatch = app.date === '2026-05-17' && app.num >= 61;
   }
@@ -192,6 +195,10 @@ function enrichApplications(apps, root) {
 }
 
 // ── HTML ─────────────────────────────────────────────────────────────────────
+
+function esc(v) {
+  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
   const total = apps.length;
@@ -209,7 +216,7 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Career-Ops — Haneel Teja Nalluru</title>
+  <title>Career-Ops — ${esc(ME.name)}</title>
   <script src="https://cdn.tailwindcss.com"><\/script>
   <style>
     body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
@@ -261,7 +268,7 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
   <div class="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-white">Career-Ops</h1>
-      <p class="text-slate-500 text-xs mt-0.5">Haneel Teja Nalluru · Built ${buildDate}</p>
+      <p class="text-slate-500 text-xs mt-0.5">${esc(ME.name)} · Built ${buildDate}</p>
     </div>
     <div class="flex gap-2 flex-wrap">
       <div class="card rounded-xl px-4 py-2.5 text-center min-w-[58px]">
@@ -412,8 +419,12 @@ function generateHTML(apps, buildDate, pendingInbox, scanHistory) {
 </div>
 
 <script>
-const DATA = ${JSON.stringify(apps)};
-const INBOX = ${JSON.stringify(pendingInbox)};
+const ME = ${JSON.stringify(ME).replace(/</g, '\\u003c')};
+function escHtml(v) {
+  return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+const DATA = ${JSON.stringify(apps).replace(/</g, '\\u003c')};
+const INBOX = ${JSON.stringify(pendingInbox).replace(/</g, '\\u003c')};
 let sortKey = 'num', sortAsc = false;
 
 function scoreClass(s) {
@@ -479,16 +490,16 @@ function genFullPack(a) {
     'URL: ' + (a.url || 'Check pipeline.md'),
     '',
     '--- STANDARD FIELDS ---',
-    'Full Name: Haneel Teja Nalluru',
-    'Email: nalluruhaneel@gmail.com',
-    'Phone: +91 9642917777',
-    'LinkedIn: linkedin.com/in/haneel-teja-nalluru-8872b0125',
-    'Location: Hyderabad, India',
-    'Total Experience: 7+ years',
-    'Current Company: Novitates Technology Solutions Pvt. Ltd.',
-    'Current Role: Sr. Business Architect',
-    'Expected CTC: \\u20b912-14L CTC (open to discussion)',
-    'Work Authorization: Indian Citizen — no sponsorship required',
+    'Full Name: ' + ME.name,
+    'Email: ' + ME.email,
+    'Phone: ' + ME.phone,
+    'LinkedIn: ' + ME.linkedin,
+    'Location: ' + ME.location,
+    'Total Experience: ' + ME.experience,
+    'Current Company: ' + ME.currentCompany,
+    'Current Role: ' + ME.currentTitle,
+    'Expected CTC: ' + ME.expectedCtcLabel,
+    'Work Authorization: ' + ME.workAuthorization,
     '',
     '--- PROFESSIONAL SUMMARY ---',
     a.summary,
@@ -500,10 +511,10 @@ function genFullPack(a) {
     ...(a.keyPoints.length ? a.keyPoints.map(p => '• ' + p) : ['• See report for details']),
     '',
     '--- ATS KEYWORDS ---',
-    a.atsKeywords || 'Business Architect, Business Analyst, Requirements, Stakeholder Management, Agile, Scrum, PMP, PEGA CPBA, CSSA',
+    a.atsKeywords || ME.atsKeywords,
     '',
     '--- SALARY RESPONSE ---',
-    'Based on my 7+ years across architecture, delivery, and AI tooling, I am targeting \\u20b912-14L CTC. Happy to discuss structure based on role scope and total package.',
+    ME.salaryScript,
     '',
     '--- EVALUATION NOTES ---',
     a.notes,
@@ -591,17 +602,11 @@ function renderActionable() {
         '<div class="tab-content tc-cover bg-slate-800/60 rounded-lg p-3 text-sm text-slate-300 leading-relaxed"><pre>' + a.coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div>' +
         '<div class="tab-content tc-points bg-slate-800/60 rounded-lg p-3"><ul class="text-sm text-slate-300 space-y-1.5">' + pts + '</ul>' + kwds + '</div>' +
         '<div class="tab-content tc-fields bg-slate-800/60 rounded-lg p-3 text-xs text-slate-300 space-y-1.5 font-mono">' +
-          '<div><span class="text-slate-500">Name:</span> Haneel Teja Nalluru</div>' +
-          '<div><span class="text-slate-500">Email:</span> nalluruhaneel@gmail.com</div>' +
-          '<div><span class="text-slate-500">Phone:</span> +91 9642917777</div>' +
-          '<div><span class="text-slate-500">LinkedIn:</span> linkedin.com/in/haneel-teja-nalluru-8872b0125</div>' +
-          '<div><span class="text-slate-500">Location:</span> Hyderabad, India</div>' +
-          '<div><span class="text-slate-500">Experience:</span> 7+ years</div>' +
-          '<div><span class="text-slate-500">Current company:</span> Novitates Technology Solutions Pvt. Ltd.</div>' +
-          '<div><span class="text-slate-500">Current title:</span> Sr. Business Architect</div>' +
-          '<div><span class="text-slate-500">Expected CTC:</span> &#8377;12&#8211;14L CTC (open to discussion)</div>' +
-          '<div><span class="text-slate-500">Authorization:</span> Indian Citizen &#8212; no visa/sponsorship required</div>' +
-          '<div class="pt-2 mt-1 border-t border-slate-700"><span class="text-slate-500">Salary script:</span> Based on my 7+ years across architecture, delivery, and AI tooling, I am targeting &#8377;12&#8211;14L CTC. Happy to discuss based on role scope and total package.</div>' +
+          [['Name', ME.name], ['Email', ME.email], ['Phone', ME.phone], ['LinkedIn', ME.linkedin],
+           ['Location', ME.location], ['Experience', ME.experience], ['Current company', ME.currentCompany],
+           ['Current title', ME.currentTitle], ['Expected CTC', ME.expectedCtcLabel], ['Authorization', ME.workAuthorization]]
+            .map(([k, v]) => '<div><span class="text-slate-500">' + k + ':</span> ' + escHtml(v) + '</div>').join('') +
+          '<div class="pt-2 mt-1 border-t border-slate-700"><span class="text-slate-500">Salary script:</span> ' + escHtml(ME.salaryScript) + '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -739,7 +744,7 @@ renderTable();
 
 // ── main ─────────────────────────────────────────────────────────────────────
 
-const root = __dirname;
+const root = ROOT;
 const apps = parseApplications(join(root, 'data', 'applications.md'));
 enrichApplications(apps, root);
 const pendingInbox = parsePendingPipeline(join(root, 'data', 'pipeline.md'));
@@ -747,11 +752,13 @@ const scanHistory = parseScanHistory(join(root, 'data', 'scan-history.tsv'));
 const buildDate = new Date().toISOString().split('T')[0];
 const html = generateHTML(apps, buildDate, pendingInbox, scanHistory);
 
-mkdirSync(join(root, 'docs'), { recursive: true });
-writeFileSync(join(root, 'docs', 'index.html'), html, 'utf-8');
+// Written under output/ (gitignored) so the dashboard is never committed or published.
+const outDir = join(root, 'output', 'dashboard');
+mkdirSync(outDir, { recursive: true });
+writeFileSync(join(outDir, 'index.html'), html, 'utf-8');
 
 const applied = apps.filter(a => a.status === 'Applied').length;
 const actionable = apps.filter(a => a.status === 'Evaluated' && a.score >= 4.0).length;
 const withUrls = apps.filter(a => a.url).length;
-console.log(`✅ Dashboard built: docs/index.html`);
+console.log(`✅ Dashboard built: output/dashboard/index.html`);
 console.log(`   ${apps.length} total · ${applied} applied · ${actionable} actionable · ${withUrls} with URLs · ${pendingInbox.length} inbox · last scan ${scanHistory.lastDate || 'never'}`);

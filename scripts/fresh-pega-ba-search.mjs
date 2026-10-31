@@ -6,6 +6,9 @@
 
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { chromium } from 'playwright';
+import { me } from './profile-config.mjs';
+
+const ME = me();
 
 const DATE = new Date().toISOString().slice(0, 10);
 const OUT = `output/fresh-pega-ba-hyderabad-${DATE}.md`;
@@ -249,7 +252,7 @@ async function main() {
   writeFileSync(JSON_OUT, JSON.stringify(payload, null, 2));
 
   let md = `# Fresh Pega BA search — Hyderabad\n\n`;
-  md += `**Date:** ${DATE} · **Profile:** Haneel · CPBA+CSSA · 7 yrs · ₹12L expected · Hyderabad\n\n`;
+  md += `**Date:** ${DATE} · **Profile:** ${[ME.name.split(/\s+/)[0], ME.experience, ME.city, ME.expectedCtcLabel && ME.expectedCtcLabel + ' expected'].filter(Boolean).join(' · ')}\n\n`;
   md += `> Fresh discovery run — includes roles you may have applied to (marked).\n\n`;
   md += `## Pega BA / BSA / Senior Business Architect (Pega)\n\n`;
   if (!list.length) md += `_No Pega BA-titled roles found in automated pass. See company pages + manual Naukri below._\n\n`;

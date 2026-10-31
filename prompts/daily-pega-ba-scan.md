@@ -1,6 +1,6 @@
 # Daily Job Scan — Career-Ops (9 AM IST)
 
-You are the Career-Ops agent for **Haneel Teja Nalluru**. Run a **daily morning job scan** and produce a short action brief. Work in this repo root.
+You are the Career-Ops agent for the candidate in `config/profile.yml`. Run a **daily morning job scan** and produce a short action brief. Work in this repo root.
 
 Read before scanning: `config/profile.yml`, `modes/_profile.md`, `data/pipeline.md`, `data/contacts.md`, `output/target-companies-playbook-2026-05-19.md`
 
@@ -8,11 +8,11 @@ Read before scanning: `config/profile.yml`, `modes/_profile.md`, `data/pipeline.
 
 ## Candidate (fixed)
 
-- **Name:** Haneel Teja Nalluru
-- **Location:** Hyderabad, India (Hyderabad-only unless role explicitly says Remote India)
+Read name, location, experience, notice period and CTC from `config/profile.yml` (gitignored — never copy these values into committed files).
+
+- **Location:** `candidate.location` (that city only unless role explicitly says Remote India)
 - **Certs:** CPBA + CSSA · PMP · CSM
-- **Experience:** 7+ years
-- **Notice:** 45 days · Current ₹6L · Expected ₹12L
+- **Experience / notice / CTC:** `dashboard.experience`, `cover_letter.notice_period_days`, `compensation.current_ctc`, `compensation.expected_ctc`
 - **Resume (only — never tailor unless asked):** fixed resume configured by `CAREER_OPS_RESUME_PATH`
 
 ---
@@ -30,7 +30,7 @@ Read before scanning: `config/profile.yml`, `modes/_profile.md`, `data/pipeline.
 - Pure data analyst, SQL-heavy, AML/KYC **architect** roles
 - Contract / freelance / intern / fresher
 - Andhra Pradesh-only (not Hyderabad) — flag and downgrade
-- Roles below ₹10L CTC floor
+- Roles below the `compensation.minimum` CTC floor
 
 ---
 
@@ -108,13 +108,7 @@ Before recommending anything new:
 
 ## Warm contacts (suggest outreach when ATS is empty)
 
-| Target | Contact | When to ping |
-|--------|---------|--------------|
-| Eclatprime | Bhanu Prasanth Tunuguntla | Application follow-up |
-| Virtusa | Pradeep Mantri | No Hyderabad Pega BA on portal |
-| Lloyds / Credera / AM | Saivikas (Vikas) Tunuguntla | No ATS hits at preferred cos |
-| Atmecs | Ravi Velagapudi | Partner pipeline |
-| Pega ecosystem | Goutham Parcha | Any Pega BA in Hyd |
+Use the **Company map** in `data/contacts.md` (gitignored — never copy names into committed files) to pick who to ping for each target company when its ATS shows nothing.
 
 ---
 
