@@ -130,7 +130,8 @@ Structure:
 ## Rules
 
 - **Do not** recommend apply from aggregators without ATS confirmation
-- **Do not** create git commits unless user asks
+- **Do not** open a new git branch or pull request for daily scans
+- **If persisting the report to git:** commit **only on `main`** — files allowed: `output/daily-pega-ba-scan-YYYY-MM-DD.md` (and prompt/script fixes if needed). Never commit `config/profile.yml`, `config/secrets.yml`, `data/contacts.md`, `data/pipeline.md`, or `data/scan-history.tsv`
 - **Do not** regenerate or tailor resume
 - **Do** run searches yourself — never guess liveness
 - If zero new ATS roles: say so clearly, then suggest warm follow-ups
