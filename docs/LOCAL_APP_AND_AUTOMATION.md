@@ -44,9 +44,10 @@ Rules enforced by `scripts/commit-daily-scan.mjs`:
 |---------|--------|
 | Repo | `https://github.com/haneelteja/Career-Ops` |
 | Branch | **`main`** (never create `cursor/daily-*` branches) |
-| Schedule | 09:00 IST |
-| Prompt | Paste contents of `prompts/daily-pega-ba-scan.md` **or** “Run prompts/daily-pega-ba-scan.md” |
-| After report | `node scripts/commit-daily-scan.mjs output/daily-pega-ba-scan-YYYY-MM-DD.md` then `git push origin main` |
+| Schedule | **09:00 IST daily** (cron UTC equivalent: `30 3 * * *`) |
+| Prompt | Follow `prompts/daily-pega-ba-scan.md` in the repo (includes commit/push steps) |
+| After report | **Required:** `node scripts/commit-daily-scan.mjs output/daily-pega-ba-scan-YYYY-MM-DD.md` then `git push origin main` |
+| Forbidden | New branches, PRs, committing `profile.yml` / `pipeline.md` / `contacts.md` |
 
 ### Preferred scan command (anti-bot)
 
