@@ -127,11 +127,24 @@ Structure:
 
 ---
 
+## Persist results (mandatory when a report file is written)
+
+After saving `output/daily-pega-ba-scan-YYYY-MM-DD.md`:
+
+1. Confirm git branch is **`main`** (`git rev-parse --abbrev-ref HEAD`). If not on main, checkout/switch to main — **never create a new branch**.
+2. Run: `node scripts/commit-daily-scan.mjs output/daily-pega-ba-scan-YYYY-MM-DD.md`
+3. If commit succeeded: `git push origin main`
+4. If the script refuses (dirty personal files, wrong branch, bad filename): fix the issue; do **not** open a PR or feature branch.
+
+Optional faster scan path before writing the markdown report:
+`npm run scan:ats -- --headed` (then still write/merge findings into the daily report format above).
+
 ## Rules
 
 - **Do not** recommend apply from aggregators without ATS confirmation
 - **Do not** open a new git branch or pull request for daily scans
-- **If persisting the report to git:** commit **only on `main`** — files allowed: `output/daily-pega-ba-scan-YYYY-MM-DD.md` (and prompt/script fixes if needed). Never commit `config/profile.yml`, `config/secrets.yml`, `data/contacts.md`, `data/pipeline.md`, or `data/scan-history.tsv`
+- **Do not** use a raw `git commit` for the report — always use `scripts/commit-daily-scan.mjs`
+- Allowed commit file: `output/daily-pega-ba-scan-YYYY-MM-DD.md` only. Never commit `config/profile.yml`, `config/secrets.yml`, `data/contacts.md`, `data/pipeline.md`, or `data/scan-history.tsv`
 - **Do not** regenerate or tailor resume
 - **Do** run searches yourself — never guess liveness
 - If zero new ATS roles: say so clearly, then suggest warm follow-ups
