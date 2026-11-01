@@ -11,14 +11,20 @@ such as `data/contacts.md` are gitignored too.
 | Script | What it does |
 |--------|--------------|
 | `pega-dashboard.mjs` | Builds the review dashboard → `output/dashboard/index.html` (gitignored, local only). `npm run dashboard` |
+| `career-ops-app.mjs` | **Local web app** on `http://127.0.0.1:8787` (dashboard + `/app` + `/api/state`). `npm run app` |
 | `profile-config.mjs` | Shared loader for the `config/profile.yml` values below |
-| `apply-batch-targets.mjs` | Opens apply targets and prefills notice/CTC/location. You click Submit |
-| `apply-sdna-052.mjs`, `fill-truviq-064.mjs`, `open-unico-email.mjs` | One-off helpers for specific postings |
+| `apply-url.mjs` | **Generic apply helper** — open any ATS URL, prefill from profile, you Submit. `npm run apply:url -- --headed URL` |
+| `apply-batch-targets.mjs` | Opens a fixed batch of apply targets. Prefer `apply-url.mjs` for new roles |
+| `scan-ats-first.mjs` | Official-ATS Playwright scan (anti-bot / no aggregators). `npm run scan:ats` |
+| `commit-daily-scan.mjs` | Commit daily report **on main only**. `npm run scan:commit -- output/daily-pega-ba-scan-YYYY-MM-DD.md` |
+| `apply-sdna-052.mjs`, `fill-truviq-064.mjs`, `open-unico-email.mjs` | Legacy one-offs for specific postings |
 | `scrape-india-jobs.mjs`, `fresh-pega-ba-search.mjs`, `deep-pega-ba-scan.mjs` | LinkedIn/company-page scrapers → `output/` |
 
+See `docs/LOCAL_APP_AND_AUTOMATION.md` for app + daily automation setup.
+
 The dashboard is no longer published to `docs/` or Vercel: it holds your whole
-pipeline plus contact details, and the repository is public. Open
-`output/dashboard/index.html` in a browser instead.
+pipeline plus contact details, and the repository is public. Use `npm run app`
+for the local UI instead.
 
 ## Keys read from `config/profile.yml`
 

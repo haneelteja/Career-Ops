@@ -15,7 +15,11 @@
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
-    "dashboard": "node scripts/pega-dashboard.mjs"
+    "scan:ats": "node scripts/scan-ats-first.mjs",
+    "scan:commit": "node scripts/commit-daily-scan.mjs",
+    "dashboard": "node scripts/pega-dashboard.mjs",
+    "app": "node scripts/career-ops-app.mjs",
+    "apply:url": "node scripts/apply-url.mjs"
   },
   "keywords": [
     "ai",

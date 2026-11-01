@@ -51,16 +51,17 @@ function parsePendingPipeline(filePath) {
   const pending = [];
   let inPending = false;
   for (const line of content.split('\n')) {
-    if (line.trim() === '## Pending') { inPending = true; continue; }
-    if (line.startsWith('## ') && line.trim() !== '## Pending') { inPending = false; continue; }
+    // Any "## Pending…" section (exact or dated consolidated headers)
+    if (/^## Pending\b/.test(line.trim())) { inPending = true; continue; }
+    if (line.startsWith('## ') && !/^## Pending\b/.test(line.trim())) { inPending = false; continue; }
     if (inPending && line.match(/^- \[ \]/)) {
       const parts = line.replace(/^- \[ \]\s*/, '').split('|').map(s => s.trim());
       const allText = parts.join(' ');
       const verified = allText.includes('✅');
-      const unverified = allText.includes('⚠️');
+      const unverified = allText.includes('⚠️') || /unverified/i.test(allText);
       const expPart = parts[3] || '';
       const exp = /\d/.test(expPart) && !expPart.includes('✅') && !expPart.includes('⚠️') ? expPart : '';
-      pending.push({ url: parts[0] || '', company: parts[1] || '', role: parts[2] || '', exp, verified, unverified });
+      pending.push({ url: parts[0] || '', company: parts[1] || '', role: parts[2] || '', exp, verified, unverified, notes: parts.slice(5).join(' | ') });
     }
   }
   return pending;

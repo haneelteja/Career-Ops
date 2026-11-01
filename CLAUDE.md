@@ -231,6 +231,10 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | Batch processes offers | `batch` |
 | Asks about rejection patterns or wants to improve targeting | `patterns` |
 | Asks about follow-ups or application cadence | `followup` |
+| Wants a cover letter draft | `cover` |
+| Wants application / referral email draft | `email` |
+| Wants funded-company discovery | `discover-funded` |
+| Wants local web UI / inbox | run `npm run app` (see `docs/LOCAL_APP_AND_AUTOMATION.md`) |
 
 ### CV Source of Truth
 
