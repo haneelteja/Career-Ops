@@ -1,16 +1,19 @@
 # Daily Pega BA Scan — 2026-11-08
 
 ### 1. Today's headline
-- **No new apply.** Official portals did not produce a Hyderabad Pega BA / Senior BA role that clears the bar.
-- Virtusa referral ATS still has **Pega BA CREQ264873** live with an Apply button. It stays a **3.1/5 skip**: 10+ years, a 0–15 day notice window, posted 30 Jul 2026 (101 days, still over 90).
-- **Wipro is no longer an empty Pega search.** The official jobs RSS and two job pages show Hyderabad **Technical Lead L1** roles with mandatory PEGA and a live Apply button. Both are coding/lead roles, not Business Analyst. **P-100973** is still not an open apply.
+- **0 net-new ATS-verified roles.** One important correction: TCS **Pega Business Analyst 430542** was omitted from recent briefs but remains live on official iBegin; it is not newly posted.
+- TCS is a **4.2/5 conditional apply**: Hyderabad, live Apply button, deadline 31 Dec 2026, but the JD requires 8–12 years and does not disclose salary. Virtusa CREQ264873 remains live but stale and unsuitable.
+- Wipro now has two live Hyderabad PEGA Technical Lead roles, but both are coding/lead jobs, not BA. Today: apply to TCS only if experience is at least 8 years and CTC clears ₹10L.
 
 ### 2. ATS-verified live roles
 
 | Priority | Company | Role | ATS link | Score | Status | Action |
 |---|---|---|---|---:|---|---|
+| 1 | TCS | Pega Business Analyst — 430542 | [Official TCS iBegin](https://ibegin.tcsapps.com/candidate/next/en-IN/jobs/430542J) | 4.2/5 | Live; Hyderabad; 8–12 years; Apply enabled; apply by 2026-12-31 | Apply today **only if total experience is 8+ years**; use the existing resume and confirm CTC ≥₹10L |
 | — | Virtusa | Pega BA — CREQ264873 | [Official Virtusa referral ATS](https://virtusapolaris.referrals.selectminds.com/jobs/pega-ba-79738) | 3.1/5 | Live, Apply button present, posted 2026-07-30 | Skip |
 | — | Wipro | Technical Lead L1 (two reqs) | [204847](https://careers.wipro.com/job/Hyderabad-TECHNICAL-LEAD-L1-IND-500032/204847-en_US/) · [204848](https://careers.wipro.com/job/Hyderabad-TECHNICAL-LEAD-L1-IND-500032/204848-en_US/) | 2.5/5 | Live, Apply now on both pages, RSS pubDate 2026-10-24 | Skip — not a BA |
+
+TCS verification: the rendered official page shows “Pega Business Analyst,” Hyderabad, 8–12 years, job ID 430542, “Apply By: 31st December 2026,” and enabled Apply buttons. The JD is BA-focused (requirements, Pega capability alignment, stakeholder management and BA mentoring), although TCS metadata labels the internal role “Developer.” Salary is not stated, so the ₹10L floor remains a recruiter-screen gate.
 
 Scoring for CREQ264873 is unchanged: 4.0 base (Pega BA JD: user stories, backlog, DCO, Pega certification required) +0.2 Hyderabad JD line −0.3 age over 90 days = 3.9, then held to 3.1 because the JD asks for 10+ years and a 0–15 day notice window. The board category is "Architect (Level: Manager)" while the JD itself is BA work. The ATS geo string says "Hyderabad, Andhra Pradesh"; the JD location line says Hyderabad, so this is not an Andhra-only posting. Compensation is undisclosed. The profile file is not in this checkout; the experience band, notice period, and compensation floor were not re-read and are not copied here.
 
@@ -40,6 +43,7 @@ Wipro is 2.5 because the title and JD are Technical Lead work: module-level code
 
 ### 4. Pipeline updates
 - This checkout has no `data/pipeline.md` or `data/contacts.md`. Comparison is against the last committed scan, 2026-11-07.
+- **TCS 430542:** restored to the active list after being omitted from recent daily reports. This is a reporting correction, not a new posting. Official iBegin remains live through 31 Dec 2026.
 - **Virtusa P-100973:** not newly live. The careers URL is Access Denied again, so the filled page could not be re-read. It is still absent from the 23 Pega referral results. Keep it closed. Do not force apply.
 - **Virtusa CREQ264873:** unchanged — still live, still a 3.1/5 skip. Posted 30 Jul 2026, now 101 days old.
 - **Wipro:** changed versus yesterday's HTML "No jobs found." The official RSS (built 2026-11-08) and both job pages are live Technical Lead L1 / PEGA / Hyderabad roles, posted 24 Oct 2026. Wrong track. No Applied row.
@@ -52,13 +56,13 @@ Wipro is 2.5 because the title and JD are Technical Lead work: module-level code
 - Portal caveats, not confirmed zeroes: Sutherland keyword widget did not return a result set, Cognizant bot wall, Infosys India board blocked, Perficient bot wall, ArcelorMittal DNS/403, Eclatprime 404, Instasmart portal gone, Areteans board is a Credera stub with no openings listed. Virtusa's main careers host is blocked today; the referral ATS was readable.
 
 ### 5. Today's action list
-1. **Do not apply today.** Nothing ATS-verified in Hyderabad clears a 4.0.
-2. **Virtusa referral thread:** P-100973 is still not an open apply. The public careers link is blocked from this check, and the last successful read said the job has been filled. If a replacement Hyderabad Pega BA req opens, the A&G/healthcare line and whether comp clears the configured floor are still the two gates.
-3. **CREQ264873:** leave it. 10+ years, 0–15 day notice, posted 30 Jul 2026.
-4. **Wipro Technical Lead L1:** do not apply these two Hyderabad PEGA reqs as BA roles. They are live, and they are coding leads.
-5. **Warm follow-up from the local contact map** (it was not in this checkout): Eclatprime, Deloitte USI, Lloyds, and Sutherland showed no confirmed Hyderabad Pega BA on the official board. A short "any Hyderabad Pega BA this week?" note is the useful ask. Do not apply from LinkedIn or Naukri copies, and do not treat the Accenture Bengaluru Pega BA or the Pega US Lead Business Architect roles as Hyderabad roles.
+1. **Apply — TCS iBegin (10 minutes):** If total experience is at least 8 years, apply to [job 430542](https://ibegin.tcsapps.com/candidate/next/en-IN/jobs/430542J) with the existing resume. Do not tailor it. If asked for expected CTC, use ₹12L; stop if the range is below ₹10L.
+2. **Skip — TCS if under 8 years:** The official minimum is 8 years. Do not stretch “7+” into 8.
+3. **LinkedIn — Pradeep Mantri:** “Hi Pradeep, I’m checking whether a replacement Hyderabad Pega Business Analyst/BSA opening has come up at Virtusa. I’m CPBA/CSSA certified with 7+ years’ experience and a 45-day notice period. If you see a suitable current req, could you please share the official job ID?”
+4. **LinkedIn — Goutham Parcha:** “Hi Goutham, have you seen any current Hyderabad or Remote India Pega BA/BSA openings in the Pega ecosystem this week? I’m targeting CPBA-track roles, not developer or LBA positions. An official careers link or job ID would be very helpful.”
+5. **No other applications today:** Leave CREQ264873, the Wipro Technical Lead roles, #73, #064 and aggregator copies alone.
 
 ### 6. Scan log
-- Checked official company portals for the preferred set and Pega partners (Workday JSON, Zoho posting payload, SelectMinds keyword search across 3 pages plus the job page for CREQ264873, Deloitte `search=Pega`, Accenture find-jobs API and the Bengaluru job page, Wipro RSS plus both Technical Lead job pages, Infosys India board and global shell, Pega.com full index and the Lead Business Architect job page, Sutherland job-results shell, Religent careers index, Capgemini and LTM RSS).
-- Eligible live Pega BA roles in Hyderabad: 1 (CREQ264873, skip). Net-new apply recommendations: 0.
+- Checked 20 requested official portals: Eclatprime, Virtusa, Deloitte USI, Lloyds TC, Sutherland, ArcelorMittal, Truviq, Credera, Areteans, Religent, Tenth Revolution, Pegasystems, Instasmart, Cognizant, Perficient, LTIMindtree/LTM, Accenture, Wipro, Infosys and Capgemini; also rechecked TCS iBegin 430542.
+- Eligible live Hyderabad Pega BA roles: 2. Net-new postings: 0. Apply-worthy restored candidate: 1.
 - P-100973 stayed closed on the last confirmed read; today's main-site recheck was Access Denied, not a reopening.
